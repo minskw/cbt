@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <iframe src="https://script.google.com/macros/s/AKfycbwVDxzx0tlQnvCv7KQOo0CtZgxYoYL-bLiUeaLsNUTAFDqDyr_CWUoB6aBV_W52QGJDlQ/exec?page=admin" allowfullscreen></iframe>
+</body>
+</html>
