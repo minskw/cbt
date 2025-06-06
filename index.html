@@ -3,19 +3,39 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta charset="UTF-8">
-  <title>Mengarahkan ke Aplikasi</title>
+  <title>Halaman Akses Ujian</title>
   <style>
     html, body {
       margin: 0; padding: 0; height: 100%; display: flex;
       justify-content: center; align-items: center;
       background: #f8f9fa; font-family: sans-serif;
+      text-align: center;
+    }
+    #admin-panel {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h3>Mengarahkan ke aplikasi ujian...</h3>
+  <div id="redirect-message">
+    <h3>Mengarahkan ke aplikasi ujian...</h3>
+  </div>
+
+  <div id="admin-panel">
+    <h2>Halaman Admin</h2>
+    <p>Ini adalah halaman khusus admin. Anda bisa menambahkan fitur seperti login, upload soal, atau lihat hasil ujian di sini.</p>
+  </div>
+
   <script>
-    window.location.replace("https://script.google.com/macros/s/AKfycbxCqGYwvsmObo6S1q6CpbCcTSLxMonukZTaL48qVn0vERVQt29VtP4zDAyrGRc9auxZmw/exec");
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get('page');
+
+    if (page === 'admin') {
+      document.getElementById('redirect-message').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+    } else {
+      window.location.replace("https://script.google.com/macros/s/AKfycbxCqGYwvsmObo6S1q6CpbCcTSLxMonukZTaL48qVn0vERVQt29VtP4zDAyrGRc9auxZmw/exec");
+    }
   </script>
 </body>
 </html>
