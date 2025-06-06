@@ -1,80 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ujian Online</title>
   <style>
     html, body {
       margin: 0;
-      padding: 0;
       height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f8f9fa;
-      font-family: sans-serif;
+      overflow: hidden;
     }
-    #app {
-      text-align: center;
-      padding: 1rem;
-    }
-    h2 {
-      margin-bottom: 0.5rem;
-    }
-    .admin-container {
-      background: #ffffff;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .admin-container a {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background: #007bff;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
+    iframe {
+      width: 100vw;
+      height: 100vh;
+      border: none;
     }
   </style>
 </head>
 <body>
-  <div id="app">
-    <!-- Konten akan diisi oleh JavaScript di bawah -->
-  </div>
-
-  <script>
-    // Baca parameter URL, misalnya ?page=admin
-    const params = new URLSearchParams(window.location.search);
-    const page = params.get('page');
-    const app = document.getElementById('app');
-
-    if (page === 'admin') {
-      // Tampilkan halaman admin (statis)
-      app.innerHTML = `
-        <div class="admin-container">
-          <h2>Halaman Admin</h2>
-          <p>Selamat datang, Admin!</p>
-          <p>Di sini Anda dapat:</p>
-          <ul style="text-align: left;">
-            <li>Mengelola soal</li>
-            <li>Melihat hasil ujian siswa</li>
-            <li>Mengunduh report, dsb.</li>
-          </ul>
-          <!-- Contoh link atau tombol tambahan di halaman admin -->
-          <a href="https://pantummin.github.io/asesmen/?page=admin&action=upload">Upload Soal</a><br>
-          <a href="https://pantummin.github.io/asesmen/">Kembali ke Ujian Siswa</a>
-        </div>
-      `;
-    } else {
-      // Jika bukan admin, langsung redirect ke aplikasi ujian
-      app.innerHTML = `<h3>Mengarahkan ke aplikasi ujian...</h3>`;
-      // Beri sedikit delay (optional) agar pengguna sempat melihat teks sebelum redirect
-      setTimeout(() => {
-        window.location.replace("https://script.google.com/macros/s/AKfycbxCqGYwvsmObo6S1q6CpbCcTSLxMonukZTaL48qVn0vERVQt29VtP4zDAyrGRc9auxZmw/exec");
-      }, 500);
-    }
-  </script>
+  <iframe src="https://script.google.com/macros/s/AKfycbwVDxzx0tlQnvCv7KQOo0CtZgxYoYL-bLiUeaLsNUTAFDqDyr_CWUoB6aBV_W52QGJDlQ/exec" allowfullscreen></iframe>
 </body>
 </html>
