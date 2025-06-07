@@ -8,7 +8,7 @@
     html, body {
       margin: 0;
       height: 100%;
-      overflow: hidden;
+      overflow: auto;
     }
     iframe {
       width: 100vw;
@@ -18,6 +18,6 @@
   </style>
 </head>
 <body>
-  <iframe src="https://script.google.com/macros/s/AKfycbwVDxzx0tlQnvCv7KQOo0CtZgxYoYL-bLiUeaLsNUTAFDqDyr_CWUoB6aBV_W52QGJDlQ/exec?page=admin" allowfullscreen></iframe>
+  <iframe src="https://script.google.com/macros/s/AKfycbxclrMdL_KOhCvkM4wXfBFhx8kcTRKMSJh_pVLLJdRfHHwBgMhcFB62cLwa8NTtWu-N/exec?page=admin" allowfullscreen></iframe>
 </body>
 </html>
