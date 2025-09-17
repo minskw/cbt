@@ -117,7 +117,10 @@
                                 <i class="fas fa-sign-in-alt mr-2"></i>Login Sekarang
                             </button>
                         </div>
-
+                        <div class="text-xs sm:text-sm text-green-100 space-y-1">
+                            <p><strong>📚 Sistem CBT Lengkap</strong></p>
+                            <p>Daftar atau login untuk mengakses sistem ujian online</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -518,16 +521,16 @@
     </div>
 
     <script>
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
-  authDomain: "jual-beli-d9d80.firebaseapp.com",
-  databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "jual-beli-d9d80",
-  storageBucket: "jual-beli-d9d80.firebasestorage.app",
-  messagingSenderId: "1080322577223",
-  appId: "1:1080322577223:web:624adcdbffb699850d7262"
-};
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
+            authDomain: "jual-beli-d9d80.firebaseapp.com",
+            databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "jual-beli-d9d80",
+            storageBucket: "jual-beli-d9d80.firebasestorage.app",
+            messagingSenderId: ". ",
+            appId: "1:. :web:624adcdbffb699850d7262"
+        };
 
         // Initialize Firebase with proper error handling
         let database, auth, isFirebaseConnected = false;
@@ -982,6 +985,7 @@ const firebaseConfig = {
                 case 'questions':
                     loadQuestions();
                     loadSubjectsForDropdown();
+                    setupQuestionFilters();
                     break;
                 case 'exams':
                     loadExams();
@@ -1405,6 +1409,9 @@ const firebaseConfig = {
             const questionsList = document.getElementById('questionsList');
             questionsList.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Memuat soal...</p></div>';
 
+            // Get filter value
+            const subjectFilter = document.getElementById('subjectFilterQuestions')?.value || '';
+
             try {
                 let questions = {};
                 
@@ -1476,18 +1483,25 @@ const firebaseConfig = {
                 
                 Object.keys(questions).forEach(questionId => {
                     const question = questions[questionId];
+                    
+                    // Apply subject filter
+                    if (subjectFilter && question.subjectId !== subjectFilter) {
+                        return; // Skip this question
+                    }
+                    
                     const questionCard = document.createElement('div');
                     questionCard.className = 'bg-white border border-gray-200 rounded-lg p-4';
                     questionCard.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <div class="flex items-center mb-2">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 mr-2">
+                                <div class="flex items-center mb-2 flex-wrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 mr-2 mb-1">
                                         ${getQuestionTypeLabel(question.type)}
                                     </span>
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 mr-2 mb-1">
                                         ${question.category || 'Umum'}
                                     </span>
+                                    ${question.subjectId ? `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 mb-1">Mapel: ${question.subjectId.toUpperCase()}</span>` : ''}
                                 </div>
                                 <p class="text-gray-800 arabic-text mb-2">${question.question}</p>
                                 ${question.explanation ? `<p class="text-sm text-gray-600">Penjelasan: ${question.explanation}</p>` : ''}
@@ -2093,7 +2107,7 @@ const firebaseConfig = {
                 
                 // Fill form with existing data
                 document.getElementById('questionType').value = questionData.type;
-                document.getElementById('questionCategory').value = questionData.category || '';
+                document.getElementById('questionSubject').value = questionData.subjectId || '';
                 document.getElementById('questionText').value = questionData.question || '';
                 document.getElementById('questionImage').value = questionData.questionImage || '';
                 
@@ -2982,123 +2996,14 @@ const firebaseConfig = {
             }
         }
 
-        // Initialize sample data for first time setup
+        // Initialize database connection check only
         async function initializeSampleData() {
             if (!isFirebaseConnected) {
-                console.log('⚠️ Database offline - skipping sample data initialization');
+                console.log('⚠️ Database offline - skipping initialization');
                 return;
             }
             
-            try {
-                console.log('🔄 Creating sample admin user...');
-                
-
-                // Create sample exam if not exists
-                const examSnapshot = await database.ref('exams').once('value');
-                const existingExams = examSnapshot.val();
-                
-                if (!existingExams || Object.keys(existingExams).length === 0) {
-                    const sampleExam = {
-                        title: 'Quiz Fiqh Dasar',
-                        description: 'Ujian tentang dasar-dasar fiqh dalam Islam',
-                        duration: 30,
-                        totalQuestions: 5,
-                        passingScore: 70,
-                        isActive: true,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                    };
-                    
-                    await database.ref('exams').push().set(sampleExam);
-                    console.log('✅ Sample exam created');
-                }
-                
-                // Create sample questions if not exists
-                const questionSnapshot = await database.ref('questions').once('value');
-                const existingQuestions = questionSnapshot.val();
-                
-                if (!existingQuestions || Object.keys(existingQuestions).length === 0) {
-                    const sampleQuestions = [
-                        {
-                            type: 'multiple_choice',
-                            category: 'Fiqh',
-                            question: 'ما هو الركن الأول من أركان الإسلام؟',
-                            options: {
-                                0: {text: 'الصلاة', image: ''},
-                                1: {text: 'الشهادة', image: ''},
-                                2: {text: 'الزكاة', image: ''},
-                                3: {text: 'الصوم', image: ''}
-                            },
-                            correctAnswer: 1,
-                            explanation: 'الشهادة هي الركن الأول من أركان الإسلام',
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        },
-                        {
-                            type: 'true_false',
-                            category: 'Akidah',
-                            question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
-                            correctAnswer: true,
-                            explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية',
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        },
-                        {
-                            type: 'multiple_choice',
-                            category: 'Fiqh',
-                            question: 'كم عدد الصلوات المفروضة في اليوم والليلة؟',
-                            options: {
-                                0: {text: 'ثلاث صلوات', image: ''},
-                                1: {text: 'أربع صلوات', image: ''},
-                                2: {text: 'خمس صلوات', image: ''},
-                                3: {text: 'ست صلوات', image: ''}
-                            },
-                            correctAnswer: 2,
-                            explanation: 'الصلوات المفروضة خمس في اليوم والليلة',
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        }
-                    ];
-                    
-                    for (const question of sampleQuestions) {
-                        await database.ref('questions').push().set(question);
-                    }
-                    
-                    console.log('✅ Sample questions created');
-                }
-                
-                console.log('🎉 Sample data initialization completed successfully!');
-                
-            } catch (error) {
-                console.error('❌ Error initializing sample data:', error);
-                
-                // Show user-friendly error message
-                if (error.code === 'auth/operation-not-allowed') {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Authentication Belum Diaktifkan',
-                        html: `
-                            <div class="text-left text-sm">
-                                <p class="mb-3">Email/Password authentication belum diaktifkan di Firebase Console.</p>
-                                <p class="mb-3"><strong>Cara mengaktifkan:</strong></p>
-                                <ol class="list-decimal list-inside space-y-1">
-                                    <li>Buka <a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline">Firebase Console</a></li>
-                                    <li>Pilih project Anda</li>
-                                    <li>Klik menu <strong>Authentication</strong></li>
-                                    <li>Pilih tab <strong>Sign-in method</strong></li>
-                                    <li>Klik <strong>Email/Password</strong> dan aktifkan</li>
-                                    <li>Klik <strong>Save</strong></li>
-                                </ol>
-                                <p class="mt-3 text-green-600">Setelah diaktifkan, refresh halaman ini.</p>
-                            </div>
-                        `,
-                        confirmButtonText: 'OK, Saya Mengerti'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error Inisialisasi Data',
-                        text: `Gagal membuat data awal: ${error.message}`,
-                        confirmButtonText: 'OK'
-                    });
-                }
-            }
+            console.log('✅ Database connected and ready for use');
         }
 
         // Excel Import/Export Functions
@@ -3622,6 +3527,15 @@ const firebaseConfig = {
             return emailRegex.test(email);
         }
 
+        // Setup Question Filters
+        function setupQuestionFilters() {
+            const subjectFilterQuestions = document.getElementById('subjectFilterQuestions');
+            
+            if (subjectFilterQuestions) {
+                subjectFilterQuestions.addEventListener('change', loadQuestions);
+            }
+        }
+
         // Setup Import Modal
         function setupImportModal() {
             const importModal = document.getElementById('importModal');
@@ -3765,5 +3679,5 @@ const firebaseConfig = {
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980c5386a1cc8807',t:'MTc1ODE1MTE0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980c6aff4712407f',t:'MTc1ODE1MjEwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
