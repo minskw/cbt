@@ -466,17 +466,7 @@
                 }
             });
             
-async function initializeSampleData() {
-  try {
-    const email = "mr.mahfudsidik@gmail.com";  // ubah sesuai kebutuhan
-    const password = "Ms197681";                 // ubah sesuai kebutuhan
-
-    // Cek apakah sudah pernah buat admin (pakai flag di localStorage)
-    if (localStorage.getItem("adminInitialized") === "true") {
-      console.log("✅ Admin sudah pernah dibuat, skip.");
-      return;
-    }
-
+async 
     // Cek apakah admin dengan email ini sudah ada di database
     const userSnapshot = await firebase.database().ref("users").orderByChild("email").equalTo(email).once("value");
     if (userSnapshot.exists()) {
@@ -2742,12 +2732,7 @@ async function initializeSampleData() {
         }
 
         // Initialize sample data for first time setup
-        async function initializeSampleData() {
-            if (!isFirebaseConnected) {
-                console.log('⚠️ Database offline - skipping sample data initialization');
-                return;
-            }
-            
+        async             
             try {
                 console.log('🔄 Creating sample admin user...');
                 
@@ -3663,8 +3648,7 @@ async function initializeSampleData() {
             
             // Initialize sample data
             setTimeout(() => {
-                initializeSampleData();
-            }, 2000);
+                }, 2000);
             
             // Listen for auth state changes
             auth.onAuthStateChanged((user) => {
