@@ -29,73 +29,95 @@
     <!-- Navigation -->
     <nav class="gradient-bg shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-12 w-12 mr-4 rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                    <i class="fas fa-mosque text-white text-2xl mr-4 hidden"></i>
+                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-10 w-10 sm:h-12 sm:w-12 mr-3 sm:mr-4 rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <i class="fas fa-mosque text-white text-xl sm:text-2xl mr-3 sm:mr-4 hidden"></i>
                     <div class="text-white">
-                        <div class="text-xl font-bold">CBT MIN SINGKAWANG</div>
-                        <div class="text-sm text-green-100">Penilaian Sumatif Akhir Semester</div>
+                        <div class="text-lg sm:text-xl font-bold">CBT MIN SINGKAWANG</div>
+                        <div class="text-xs sm:text-sm text-green-100 hidden sm:block">Penilaian Sumatif Akhir Semester</div>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div id="connectionStatus" class="text-xs text-green-200 hidden">
-                        <i class="fas fa-circle text-green-400 mr-1"></i>Online
-                    </div>
-                    <button id="loginBtn" class="text-white hover:text-green-200 px-3 py-2 rounded-md">
-                        <i class="fas fa-sign-in-alt mr-2"></i>
+                <div class="flex items-center">
+                    <button id="loginBtn" class="text-white hover:text-green-200 px-2 sm:px-3 py-2 rounded-md text-sm">
+                        <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i><span class="hidden sm:inline">Login</span>
                     </button>
-                    <button id="adminBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md hidden">
-                        <i class="fas fa-cog mr-2"></i>
-                    </button>
-                    <button id="logoutBtn" class="text-white hover:text-green-200 px-3 py-2 rounded-md hidden">
-                        <i class="fas fa-sign-out-alt mr-2"></i>
+                    <button id="logoutBtn" class="text-white hover:text-green-200 px-2 sm:px-3 py-2 rounded-md text-sm hidden">
+                        <i class="fas fa-sign-out-alt mr-1 sm:mr-2"></i><span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </div>
         </div>
     </nav>
 
+    <!-- Status Bar (Mobile First) -->
+    <div class="bg-green-50 border-b border-green-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 space-y-2 sm:space-y-0">
+                <!-- Student Identity -->
+                <div id="studentIdentity" class="hidden text-sm text-gray-700">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-circle text-green-600 mr-2"></i>
+                        <span id="studentName" class="font-medium"></span>
+                        <span class="mx-2 text-gray-400">•</span>
+                        <span id="studentEmail" class="text-gray-600"></span>
+                    </div>
+                </div>
+                
+                <!-- Admin Controls & Status -->
+                <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <div id="connectionStatus" class="text-xs text-gray-600 hidden">
+                        <i class="fas fa-circle text-green-500 mr-1"></i>Database Connected
+                    </div>
+                    <button id="adminBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm hidden self-start sm:self-auto">
+                        <i class="fas fa-cog mr-2"></i>Admin Panel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Welcome Page (Default) -->
         <div id="welcomePage">
-            <div class="text-center mb-12">
-                <div class="mb-8">
-                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-24 w-24 mx-auto mb-6 rounded-full shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <i class="fas fa-mosque text-green-600 text-6xl mb-6 hidden"></i>
-                    <h1 class="text-5xl font-bold text-gray-800 mb-3">CBT MIN SINGKAWANG</h1>
-                    <p class="text-2xl text-gray-700 mb-2 font-semibold">Penilaian Sumatif Akhir Semester</p>
-                    <p class="text-lg text-gray-600">Tahun Ajaran 2025/2026 Semester 1</p>
+            <div class="text-center mb-8 sm:mb-12">
+                <div class="mb-6 sm:mb-8">
+                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-16 w-16 sm:h-24 sm:w-24 mx-auto mb-4 sm:mb-6 rounded-full shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="fas fa-mosque text-green-600 text-4xl sm:text-6xl mb-4 sm:mb-6 hidden"></i>
+                    <h1 class="text-2xl sm:text-3xl lg:text-5xl font-bold text-gray-800 mb-2 sm:mb-3 px-4">CBT MIN SINGKAWANG</h1>
+                    <p class="text-lg sm:text-xl lg:text-2xl text-gray-700 mb-1 sm:mb-2 font-semibold px-4">Penilaian Sumatif Akhir Semester</p>
+                    <p class="text-sm sm:text-base lg:text-lg text-gray-600 px-4">Tahun Ajaran 2025/2026 Semester 1</p>
                 </div>
                 
-                <div class="max-w-4xl mx-auto">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-                            <i class="fas fa-book-open text-green-600 text-3xl mb-4"></i>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">6 Tipe Soal</h3>
-                            <p class="text-gray-600">Pilihan Ganda, Menjodohkan, Benar-Salah, Isian, Esai, dan PG Kompleks</p>
+                <div class="max-w-6xl mx-auto">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 px-4">
+                        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
+                            <i class="fas fa-book-open text-green-600 text-2xl sm:text-3xl mb-3 sm:mb-4"></i>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">6 Tipe Soal</h3>
+                            <p class="text-sm sm:text-base text-gray-600">Pilihan Ganda, Menjodohkan, Benar-Salah, Isian, Esai, dan PG Kompleks</p>
                         </div>
-                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-                            <i class="fas fa-users text-green-600 text-3xl mb-4"></i>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Panel Admin</h3>
-                            <p class="text-gray-600">Kelola peserta, ujian, soal, dan hasil secara lengkap</p>
+                        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
+                            <i class="fas fa-users text-green-600 text-2xl sm:text-3xl mb-3 sm:mb-4"></i>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Panel Admin</h3>
+                            <p class="text-sm sm:text-base text-gray-600">Kelola peserta, ujian, soal, dan hasil secara lengkap</p>
                         </div>
-                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-                            <i class="fas fa-image text-green-600 text-3xl mb-4"></i>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Soal Bergambar</h3>
-                            <p class="text-gray-600">Dukungan gambar pada pertanyaan dan opsi jawaban</p>
+                        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center sm:col-span-2 lg:col-span-1">
+                            <i class="fas fa-graduation-cap text-green-600 text-2xl sm:text-3xl mb-3 sm:mb-4"></i>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Multi Mata Pelajaran</h3>
+                            <p class="text-sm sm:text-base text-gray-600">Sistem ujian berdasarkan mata pelajaran dengan bank soal terorganisir</p>
                         </div>
                     </div>
 
-                    <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-8 text-white text-center">
-                        <h2 class="text-2xl font-bold mb-4">Mulai Pengalaman Quiz Islami Anda</h2>
-                        <p class="text-green-100 mb-6">Login untuk mengakses quiz atau panel admin</p>
-                        <div class="space-x-4">
-                            <button onclick="document.getElementById('loginModal').classList.remove('hidden')" class="bg-white text-green-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition duration-200">
+                    <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-6 sm:p-8 text-white text-center mx-4">
+                        <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Mulai Pengalaman Quiz Islami Anda</h2>
+                        <p class="text-green-100 mb-4 sm:mb-6 text-sm sm:text-base">Login untuk mengakses quiz atau panel admin</p>
+                        <div class="mb-4 sm:mb-6">
+                            <button onclick="document.getElementById('loginModal').classList.remove('hidden')" class="bg-white text-green-600 hover:bg-gray-100 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition duration-200 text-sm sm:text-base w-full sm:w-auto">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Login Sekarang
                             </button>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -104,23 +126,23 @@
         <!-- Login Modal -->
         <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
             <div class="flex items-center justify-center min-h-screen p-4">
-                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                    <div class="text-center mb-6">
-                        <i class="fas fa-user-circle text-green-600 text-4xl mb-2"></i>
-                        <h2 class="text-2xl font-bold text-gray-800">Login</h2>
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-4 sm:p-6">
+                    <div class="text-center mb-4 sm:mb-6">
+                        <i class="fas fa-user-circle text-green-600 text-3xl sm:text-4xl mb-2"></i>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Login</h2>
                     </div>
                     <form id="loginForm">
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                            <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                            <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" required>
                         </div>
                         <div class="mb-6">
                             <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                            <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                            <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" required>
                         </div>
-                        <div class="flex justify-between">
-                            <button type="button" id="closeLoginModal" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
-                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">Login</button>
+                        <div class="flex flex-col sm:flex-row sm:justify-between space-y-2 sm:space-y-0">
+                            <button type="button" id="closeLoginModal" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base">Batal</button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md text-sm sm:text-base">Login</button>
                         </div>
                     </form>
                 </div>
@@ -129,14 +151,14 @@
 
         <!-- Student Dashboard -->
         <div id="studentDashboard" class="hidden">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold text-gray-800 mb-2">CBT MIN SINGKAWANG</h1>
-                <p class="text-xl text-gray-700 mb-1 font-semibold">Penilaian Sumatif Akhir Semester</p>
-                <p class="text-gray-600 text-lg">Tahun Ajaran 2025/2026 Semester 1</p>
+            <div class="text-center mb-6 sm:mb-8">
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-2 px-4">CBT MIN SINGKAWANG</h1>
+                <p class="text-lg sm:text-xl text-gray-700 mb-1 font-semibold px-4">Penilaian Sumatif Akhir Semester</p>
+                <p class="text-gray-600 text-sm sm:text-base lg:text-lg px-4">Tahun Ajaran 2025/2026 Semester 1</p>
             </div>
 
             <!-- Available Quizzes -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="quizList">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="quizList">
                 <!-- Quiz cards will be populated here -->
             </div>
         </div>
@@ -182,37 +204,40 @@
             <div class="bg-white rounded-lg shadow-lg">
                 <!-- Admin Navigation -->
                 <div class="border-b border-gray-200">
-                    <nav class="flex space-x-8 px-6">
-                        <button class="admin-tab py-4 px-1 border-b-2 border-green-500 text-green-600 font-medium" data-tab="participants">
-                            <i class="fas fa-users mr-2"></i>Peserta
+                    <nav class="flex overflow-x-auto px-4 sm:px-6">
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-green-500 text-green-600 font-medium whitespace-nowrap text-sm sm:text-base" data-tab="participants">
+                            <i class="fas fa-users mr-1 sm:mr-2"></i><span class="hidden sm:inline">Peserta</span><span class="sm:hidden">User</span>
                         </button>
-                        <button class="admin-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="exams">
-                            <i class="fas fa-clipboard-list mr-2"></i>Ujian
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="subjects">
+                            <i class="fas fa-book mr-1 sm:mr-2"></i><span class="hidden sm:inline">Mata Pelajaran</span><span class="sm:hidden">Mapel</span>
                         </button>
-                        <button class="admin-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="questions">
-                            <i class="fas fa-question-circle mr-2"></i>Soal
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="questions">
+                            <i class="fas fa-question-circle mr-1 sm:mr-2"></i>Soal
                         </button>
-                        <button class="admin-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="results">
-                            <i class="fas fa-chart-bar mr-2"></i>Hasil
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="exams">
+                            <i class="fas fa-clipboard-list mr-1 sm:mr-2"></i>Ujian
+                        </button>
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="results">
+                            <i class="fas fa-chart-bar mr-1 sm:mr-2"></i>Hasil
                         </button>
                     </nav>
                 </div>
 
                 <!-- Admin Content -->
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <!-- Participants Tab -->
                     <div id="participantsTab" class="admin-content">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-800">Manajemen Peserta</h3>
-                            <div class="flex space-x-2">
-                                <button id="downloadParticipantTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                                    <i class="fas fa-download mr-2"></i>Template Excel
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800">Manajemen Peserta</h3>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <button id="downloadParticipantTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-download mr-1 sm:mr-2"></i><span class="hidden sm:inline">Template Excel</span><span class="sm:hidden">Template</span>
                                 </button>
-                                <button id="importParticipantsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
-                                    <i class="fas fa-upload mr-2"></i>Import Excel
+                                <button id="importParticipantsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-upload mr-1 sm:mr-2"></i><span class="hidden sm:inline">Import Excel</span><span class="sm:hidden">Import</span>
                                 </button>
-                                <button id="addParticipantBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
-                                    <i class="fas fa-plus mr-2"></i>Tambah Peserta
+                                <button id="addParticipantBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-plus mr-1 sm:mr-2"></i><span class="hidden sm:inline">Tambah Peserta</span><span class="sm:hidden">Tambah</span>
                                 </button>
                             </div>
                         </div>
@@ -220,10 +245,10 @@
                             <table class="min-w-full bg-white border border-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="participantsTable" class="divide-y divide-gray-200">
@@ -233,83 +258,121 @@
                         </div>
                     </div>
 
-                    <!-- Exams Tab -->
-                    <div id="examsTab" class="admin-content hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-800">Manajemen Ujian</h3>
-                            <button id="addExamBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
-                                <i class="fas fa-plus mr-2"></i>Buat Ujian
+                    <!-- Subjects Tab -->
+                    <div id="subjectsTab" class="admin-content hidden">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800">Manajemen Mata Pelajaran</h3>
+                            <button id="addSubjectBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm self-start sm:self-auto">
+                                <i class="fas fa-plus mr-1 sm:mr-2"></i>Tambah Mata Pelajaran
                             </button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="examsList">
-                            <!-- Exams will be populated here -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="subjectsList">
+                            <!-- Subjects will be populated here -->
                         </div>
                     </div>
 
                     <!-- Questions Tab -->
                     <div id="questionsTab" class="admin-content hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-800">Bank Soal</h3>
-                            <div class="flex space-x-2">
-                                <button id="downloadQuestionTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                                    <i class="fas fa-download mr-2"></i>Template Excel
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800">Bank Soal</h3>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <select id="subjectFilterQuestions" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">Semua Mata Pelajaran</option>
+                                </select>
+                                <button id="downloadQuestionTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-download mr-1 sm:mr-2"></i><span class="hidden sm:inline">Template Excel</span><span class="sm:hidden">Template</span>
                                 </button>
-                                <button id="importQuestionsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
-                                    <i class="fas fa-upload mr-2"></i>Import Excel
+                                <button id="importQuestionsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-upload mr-1 sm:mr-2"></i><span class="hidden sm:inline">Import Excel</span><span class="sm:hidden">Import</span>
                                 </button>
-                                <button id="addQuestionBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
-                                    <i class="fas fa-plus mr-2"></i>Tambah Soal
+                                <button id="addQuestionBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-plus mr-1 sm:mr-2"></i><span class="hidden sm:inline">Tambah Soal</span><span class="sm:hidden">Tambah</span>
                                 </button>
                             </div>
                         </div>
-                        <div class="space-y-4" id="questionsList">
+                        <div class="space-y-3 sm:space-y-4" id="questionsList">
                             <!-- Questions will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Exams Tab -->
+                    <div id="examsTab" class="admin-content hidden">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800">Manajemen Ujian</h3>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <select id="subjectFilterExams" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">Semua Mata Pelajaran</option>
+                                </select>
+                                <button id="addExamBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-plus mr-1 sm:mr-2"></i>Buat Ujian
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="examsList">
+                            <!-- Exams will be populated here -->
                         </div>
                     </div>
 
                     <!-- Results Tab -->
                     <div id="resultsTab" class="admin-content hidden">
-                        <div class="mb-6">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4">Hasil Ujian</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                                <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="mb-4 sm:mb-6">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
+                                <h3 class="text-lg sm:text-xl font-bold text-gray-800">Hasil Ujian</h3>
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                    <select id="subjectFilterResults" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <option value="">Semua Mata Pelajaran</option>
+                                    </select>
+                                    <select id="examFilterResults" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <option value="">Semua Ujian</option>
+                                    </select>
+                                    <button id="exportResultsBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                        <i class="fas fa-file-excel mr-1 sm:mr-2"></i><span class="hidden sm:inline">Export Excel</span><span class="sm:hidden">Export</span>
+                                    </button>
+                                    <button id="printResultsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                        <i class="fas fa-print mr-1 sm:mr-2"></i><span class="hidden sm:inline">Print</span><span class="sm:hidden">Print</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-6">
+                                <div class="bg-blue-50 p-3 sm:p-4 rounded-lg">
                                     <div class="flex items-center">
-                                        <i class="fas fa-users text-blue-600 text-2xl mr-3"></i>
+                                        <i class="fas fa-users text-blue-600 text-xl sm:text-2xl mr-2 sm:mr-3"></i>
                                         <div>
-                                            <p class="text-sm text-gray-600">Total Peserta</p>
-                                            <p class="text-2xl font-bold text-blue-600" id="totalParticipants">0</p>
+                                            <p class="text-xs sm:text-sm text-gray-600">Total Peserta</p>
+                                            <p class="text-lg sm:text-2xl font-bold text-blue-600" id="totalParticipants">0</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bg-green-50 p-4 rounded-lg">
+                                <div class="bg-green-50 p-3 sm:p-4 rounded-lg">
                                     <div class="flex items-center">
-                                        <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
+                                        <i class="fas fa-check-circle text-green-600 text-xl sm:text-2xl mr-2 sm:mr-3"></i>
                                         <div>
-                                            <p class="text-sm text-gray-600">Lulus</p>
-                                            <p class="text-2xl font-bold text-green-600" id="passedCount">0</p>
+                                            <p class="text-xs sm:text-sm text-gray-600">Lulus</p>
+                                            <p class="text-lg sm:text-2xl font-bold text-green-600" id="passedCount">0</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bg-red-50 p-4 rounded-lg">
+                                <div class="bg-red-50 p-3 sm:p-4 rounded-lg">
                                     <div class="flex items-center">
-                                        <i class="fas fa-times-circle text-red-600 text-2xl mr-3"></i>
+                                        <i class="fas fa-times-circle text-red-600 text-xl sm:text-2xl mr-2 sm:mr-3"></i>
                                         <div>
-                                            <p class="text-sm text-gray-600">Tidak Lulus</p>
-                                            <p class="text-2xl font-bold text-red-600" id="failedCount">0</p>
+                                            <p class="text-xs sm:text-sm text-gray-600">Tidak Lulus</p>
+                                            <p class="text-lg sm:text-2xl font-bold text-red-600" id="failedCount">0</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white border border-gray-200">
+                            <table class="min-w-full bg-white border border-gray-200" id="resultsTableMain">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peserta</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ujian</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Skor</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peserta</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ujian</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mapel</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Skor</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
                                     </tr>
                                 </thead>
                                 <tbody id="resultsTable" class="divide-y divide-gray-200">
@@ -363,23 +426,56 @@
         </div>
     </div>
 
+    <!-- Subject Modal -->
+    <div id="subjectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-4 sm:p-6">
+                <div class="flex justify-between items-center mb-4 sm:mb-6">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-800">Tambah/Edit Mata Pelajaran</h3>
+                    <button id="closeSubjectModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-lg sm:text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="subjectForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Nama Mata Pelajaran</label>
+                        <input type="text" id="subjectName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="Contoh: Fiqh, Akidah, Akhlaq" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Kode Mata Pelajaran</label>
+                        <input type="text" id="subjectCode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="Contoh: FQH, AQD, AKH" required>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi</label>
+                        <textarea id="subjectDescription" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" rows="3" placeholder="Deskripsi mata pelajaran (opsional)"></textarea>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+                        <button type="button" id="cancelSubjectBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base">Batal</button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md text-sm sm:text-base">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Question Modal -->
     <div id="questionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-gray-800">Tambah/Edit Soal</h3>
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto mx-4">
+                <div class="p-4 sm:p-6">
+                    <div class="flex justify-between items-center mb-4 sm:mb-6">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-800">Tambah/Edit Soal</h3>
                         <button id="closeQuestionModal" class="text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-times text-xl"></i>
+                            <i class="fas fa-times text-lg sm:text-xl"></i>
                         </button>
                     </div>
                     
                     <form id="questionForm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div>
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Tipe Soal</label>
-                                <select id="questionType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                <select id="questionType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" required>
                                     <option value="">Pilih Tipe Soal</option>
                                     <option value="multiple_choice">Pilihan Ganda</option>
                                     <option value="complex_multiple_choice">Pilihan Ganda Kompleks</option>
@@ -390,8 +486,10 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
-                                <input type="text" id="questionCategory" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Contoh: Fiqh, Akidah, dll">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Mata Pelajaran</label>
+                                <select id="questionSubject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" required>
+                                    <option value="">Pilih Mata Pelajaran</option>
+                                </select>
                             </div>
                         </div>
 
@@ -421,15 +519,15 @@
 
     <script>
         // Firebase Configuration - GANTI DENGAN KONFIGURASI FIREBASE ANDA
-const firebaseConfig = {
-  apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
-  authDomain: "jual-beli-d9d80.firebaseapp.com",
-  databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "jual-beli-d9d80",
-  storageBucket: "jual-beli-d9d80.firebasestorage.app",
-  messagingSenderId: "1080322577223",
-  appId: "1:1080322577223:web:624adcdbffb699850d7262"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0", // Ganti dengan API Key Anda
+            authDomain: "cbt-min-singkawang.firebaseapp.com", // Ganti dengan Auth Domain Anda
+            databaseURL: "https://cbt-min-singkawang-default-rtdb.firebaseio.com", // Ganti dengan Database URL Anda
+            projectId: "cbt-min-singkawang", // Ganti dengan Project ID Anda
+            storageBucket: "cbt-min-singkawang.appspot.com", // Ganti dengan Storage Bucket Anda
+            messagingSenderId: "123456789012", // Ganti dengan Messaging Sender ID Anda
+            appId: "1:123456789012:web:abcdef123456" // Ganti dengan App ID Anda
+        };
 
         // Initialize Firebase with proper error handling
         let database, auth, isFirebaseConnected = false;
@@ -449,11 +547,11 @@ const firebaseConfig = {
                 
                 if (connectionStatus) {
                     if (isFirebaseConnected) {
-                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>';
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>Database Connected';
                         connectionStatus.classList.remove('hidden');
                         console.log("✅ Database connection active");
                     } else {
-                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Offline';
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Database Offline';
                         connectionStatus.classList.remove('hidden');
                         console.log("❌ Database connection lost");
                     }
@@ -504,6 +602,7 @@ const firebaseConfig = {
         // Database helper functions
         const dbRef = {
             users: () => database.ref('users'),
+            subjects: () => database.ref('subjects'),
             exams: () => database.ref('exams'),
             questions: () => database.ref('questions'),
             results: () => database.ref('results')
@@ -822,6 +921,24 @@ const firebaseConfig = {
         function showStudentDashboard() {
             hideAllPanels();
             studentDashboard.classList.remove('hidden');
+            
+            // Show student identity
+            if (currentUser) {
+                const studentIdentity = document.getElementById('studentIdentity');
+                const studentName = document.getElementById('studentName');
+                const studentEmail = document.getElementById('studentEmail');
+                
+                if (currentUser.uid === 'demo-student') {
+                    studentName.textContent = 'Peserta Demo';
+                    studentEmail.textContent = 'peserta@email.com';
+                } else {
+                    studentName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+                    studentEmail.textContent = currentUser.email;
+                }
+                
+                studentIdentity.classList.remove('hidden');
+            }
+            
             loadQuizzesForStudent();
         }
 
@@ -859,15 +976,148 @@ const firebaseConfig = {
                 case 'participants':
                     loadParticipants();
                     break;
-                case 'exams':
-                    loadExams();
+                case 'subjects':
+                    loadSubjects();
                     break;
                 case 'questions':
                     loadQuestions();
+                    loadSubjectsForDropdown();
+                    break;
+                case 'exams':
+                    loadExams();
+                    loadSubjectsForDropdown();
                     break;
                 case 'results':
                     loadResults();
+                    loadSubjectsForDropdown();
                     break;
+            }
+        }
+
+        async function loadSubjects() {
+            const subjectsList = document.getElementById('subjectsList');
+            subjectsList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Memuat mata pelajaran...</p></div>';
+
+            try {
+                let subjects = {};
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo subjects
+                    subjects = {
+                        'fiqh': {
+                            name: 'Fiqh',
+                            code: 'FQH',
+                            description: 'Ilmu tentang hukum-hukum syariat Islam',
+                            isActive: true
+                        },
+                        'akidah': {
+                            name: 'Akidah',
+                            code: 'AQD',
+                            description: 'Ilmu tentang keimanan dan kepercayaan dalam Islam',
+                            isActive: true
+                        },
+                        'akhlaq': {
+                            name: 'Akhlaq',
+                            code: 'AKH',
+                            description: 'Ilmu tentang budi pekerti dan moral Islam',
+                            isActive: true
+                        },
+                        'sirah': {
+                            name: 'Sirah Nabawiyah',
+                            code: 'SRH',
+                            description: 'Sejarah hidup Nabi Muhammad SAW',
+                            isActive: false
+                        }
+                    };
+                } else if (isFirebaseConnected) {
+                    const snapshot = await dbRef.subjects().once('value');
+                    subjects = snapshot.val() || {};
+                }
+                
+                subjectsList.innerHTML = '';
+                
+                Object.keys(subjects).forEach(subjectId => {
+                    const subject = subjects[subjectId];
+                    const subjectCard = document.createElement('div');
+                    subjectCard.className = 'bg-white rounded-lg shadow-lg p-4 sm:p-6';
+                    subjectCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-3 sm:mb-4">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-bold text-gray-800">${subject.name}</h4>
+                                <p class="text-sm text-gray-600 font-mono">${subject.code}</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${subject.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${subject.isActive ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 mb-4 text-sm">${subject.description || 'Tidak ada deskripsi'}</p>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                            <button onclick="editSubject('${subjectId}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            <button onclick="deleteSubject('${subjectId}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm">
+                                <i class="fas fa-trash mr-1"></i>Hapus
+                            </button>
+                        </div>
+                    `;
+                    subjectsList.appendChild(subjectCard);
+                });
+
+                if (Object.keys(subjects).length === 0) {
+                    subjectsList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-book text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">Belum ada mata pelajaran</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                subjectsList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i><p class="text-red-500">Gagal memuat mata pelajaran</p></div>';
+            }
+        }
+
+        async function loadSubjectsForDropdown() {
+            try {
+                let subjects = {};
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    subjects = {
+                        'fiqh': { name: 'Fiqh', code: 'FQH', isActive: true },
+                        'akidah': { name: 'Akidah', code: 'AQD', isActive: true },
+                        'akhlaq': { name: 'Akhlaq', code: 'AKH', isActive: true },
+                        'sirah': { name: 'Sirah Nabawiyah', code: 'SRH', isActive: false }
+                    };
+                } else if (isFirebaseConnected) {
+                    const snapshot = await dbRef.subjects().once('value');
+                    subjects = snapshot.val() || {};
+                }
+
+                // Update all subject dropdowns
+                const dropdowns = [
+                    'questionSubject',
+                    'examSubject', 
+                    'subjectFilterQuestions',
+                    'subjectFilterExams',
+                    'subjectFilterResults'
+                ];
+
+                dropdowns.forEach(dropdownId => {
+                    const dropdown = document.getElementById(dropdownId);
+                    if (dropdown) {
+                        // Keep first option (usually "Pilih..." or "Semua...")
+                        const firstOption = dropdown.options[0];
+                        dropdown.innerHTML = '';
+                        dropdown.appendChild(firstOption);
+                        
+                        Object.keys(subjects).forEach(subjectId => {
+                            const subject = subjects[subjectId];
+                            if (subject.isActive || dropdownId.includes('Filter')) {
+                                const option = document.createElement('option');
+                                option.value = subjectId;
+                                option.textContent = `${subject.name} (${subject.code})`;
+                                dropdown.appendChild(option);
+                            }
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading subjects for dropdown:', error);
             }
         }
 
@@ -2742,6 +2992,7 @@ const firebaseConfig = {
             try {
                 console.log('🔄 Creating sample admin user...');
                 
+
                 // Create sample exam if not exists
                 const examSnapshot = await database.ref('exams').once('value');
                 const existingExams = examSnapshot.val();
@@ -3514,6 +3765,5 @@ const firebaseConfig = {
             });
         });
     </script>
-
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980c5386a1cc8807',t:'MTc1ODE1MTE0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
