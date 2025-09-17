@@ -97,8 +97,9 @@
                             </button>
                         </div>
                         <div class="mt-6 text-sm text-green-100">
-                            <p><strong>Demo Admin:</strong> admin@quiz.com / admin123</p>
-                            <p><strong>Demo Peserta:</strong> peserta@email.com / password123</p>
+                            <p><strong>🔑 Demo Admin:</strong> admin@quiz.com / admin123</p>
+                            <p><strong>👤 Demo Peserta:</strong> peserta@email.com / password123</p>
+                            <p class="text-xs mt-2 text-green-200">✨ Mode Demo - Data tidak disimpan permanen</p>
                         </div>
                     </div>
                 </div>
@@ -424,48 +425,86 @@
     </div>
 
     <script>
-        // Firebase Configuration - Real Working Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
-            authDomain: "jual-beli-d9d80.firebaseapp.com",
-            databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "jual-beli-d9d80",
-            storageBucket: "jual-beli-d9d80.firebasestorage.app",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:624adcdbffb699850d7262"
-        };
+        // Firebase Configuration - GANTI DENGAN KONFIGURASI FIREBASE ANDA
+// Konfigurasi Firebase Anda
+  const firebaseConfig = {
+    apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
+    authDomain: "jual-beli-d9d80.firebaseapp.com",
+    databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "jual-beli-d9d80",
+    storageBucket: "jual-beli-d9d80.firebasestorage.app",
+    messagingSenderId: "1080322577223",
+    appId: "1:1080322577223:web:624adcdbffb699850d7262"
+  };
 
-        // Initialize Firebase with error handling
+        // Initialize Firebase with proper error handling
         let database, auth, isFirebaseConnected = false;
+        
         try {
+            // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
             database = firebase.database();
             auth = firebase.auth();
-            isFirebaseConnected = true;
-            console.log("🔥 Firebase connected successfully!");
             
-            // Test connection
+            console.log("🔥 Firebase initialized successfully!");
+            
+            // Test database connection
             database.ref('.info/connected').on('value', (snapshot) => {
+                isFirebaseConnected = snapshot.val() === true;
                 const connectionStatus = document.getElementById('connectionStatus');
-                if (snapshot.val() === true) {
-                    console.log('✅ Database connection active');
-                    isFirebaseConnected = true;
-                    if (connectionStatus) {
-                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>Online';
+                
+                if (connectionStatus) {
+                    if (isFirebaseConnected) {
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>Database Connected';
                         connectionStatus.classList.remove('hidden');
-                    }
-                } else {
-                    console.log('❌ Database connection lost');
-                    isFirebaseConnected = false;
-                    if (connectionStatus) {
-                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Offline';
+                        console.log("✅ Database connection active");
+                    } else {
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Database Offline';
                         connectionStatus.classList.remove('hidden');
+                        console.log("❌ Database connection lost");
                     }
                 }
             });
+            
+            // Initialize sample admin user if needed
+            setTimeout(async () => {
+                if (isFirebaseConnected) {
+                    await initializeSampleData();
+                }
+            }, 2000);
+            
         } catch (error) {
-            console.error("❌ Firebase connection error:", error);
+            console.error("❌ Firebase initialization failed:", error);
+            
+            // Show error message to user
+            const connectionStatus = document.getElementById('connectionStatus');
+            if (connectionStatus) {
+                connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400 mr-1"></i>Config Error';
+                connectionStatus.classList.remove('hidden');
+            }
+            
+            // Fallback to offline mode
             isFirebaseConnected = false;
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Konfigurasi Firebase Error',
+                html: `
+                    <div class="text-left text-sm">
+                        <p class="mb-3"><strong>Langkah untuk memperbaiki:</strong></p>
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li>Buka <a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline">Firebase Console</a></li>
+                            <li>Pilih project Anda atau buat project baru</li>
+                            <li>Aktifkan <strong>Realtime Database</strong> di menu Database</li>
+                            <li>Aktifkan <strong>Email/Password Authentication</strong> di menu Authentication > Sign-in method</li>
+                            <li>Copy konfigurasi dari Project Settings > General > Your apps</li>
+                            <li>Ganti konfigurasi firebaseConfig di kode ini</li>
+                        </ol>
+                        <p class="mt-3 text-red-600"><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `,
+                confirmButtonText: 'OK, Saya Mengerti'
+            });
         }
 
         // Database helper functions
@@ -536,90 +575,62 @@
             });
 
             try {
-                // Check if this is demo login
-                if (email === 'admin@quiz.com' && password === 'admin123') {
-                    // Demo admin login
-                    currentUser = { uid: 'demo-admin', email: 'admin@quiz.com', role: 'admin' };
-                    
-                    loginModal.classList.add('hidden');
-                    loginBtn.classList.add('hidden');
-                    logoutBtn.classList.remove('hidden');
-                    adminBtn.classList.remove('hidden');
-                    
-                    Swal.close();
-                    showAdminPanel();
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Login Berhasil!',
-                        text: 'Selamat datang, Administrator',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    
-                } else if (email === 'peserta@email.com' && password === 'password123') {
-                    // Demo student login
-                    currentUser = { uid: 'demo-student', email: 'peserta@email.com', role: 'student' };
-                    
-                    loginModal.classList.add('hidden');
-                    loginBtn.classList.add('hidden');
-                    logoutBtn.classList.remove('hidden');
-                    
-                    Swal.close();
-                    showStudentDashboard();
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Login Berhasil!',
-                        text: 'Selamat datang, Peserta Demo',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    
-                } else {
-                    // Try Firebase authentication for real users
-                    if (isFirebaseConnected) {
-                        try {
-                            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                            currentUser = userCredential.user;
-                            
-                            // Get user data from database
-                            const userSnapshot = await dbRef.users().child(currentUser.uid).once('value');
-                            const userData = userSnapshot.val();
-                            
-                            loginModal.classList.add('hidden');
-                            loginBtn.classList.add('hidden');
-                            logoutBtn.classList.remove('hidden');
+                // Try Firebase authentication first
+                if (isFirebaseConnected) {
+                    try {
+                        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                        currentUser = userCredential.user;
+                        
+                        // Get user data from database
+                        const userSnapshot = await database.ref('users').child(currentUser.uid).once('value');
+                        const userData = userSnapshot.val();
+                        
+                        loginModal.classList.add('hidden');
+                        loginBtn.classList.add('hidden');
+                        logoutBtn.classList.remove('hidden');
 
-                            Swal.close();
-                            
-                            if (userData && userData.role === 'admin') {
-                                adminBtn.classList.remove('hidden');
-                                showAdminPanel();
-                            } else {
-                                showStudentDashboard();
-                            }
+                        Swal.close();
+                        
+                        if (userData && userData.role === 'admin') {
+                            adminBtn.classList.remove('hidden');
+                            showAdminPanel();
+                        } else {
+                            showStudentDashboard();
+                        }
 
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Login Berhasil!',
-                                text: `Selamat datang, ${userData ? userData.name : email}`,
-                                timer: 2000,
-                                showConfirmButton: false
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Login Berhasil!',
+                            text: `Selamat datang, ${userData ? userData.name : email}`,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                    } catch (firebaseError) {
+                        console.error('Firebase login error:', firebaseError);
+                        Swal.close();
+                        
+                        // Handle different Firebase auth errors
+                        if (firebaseError.code === 'auth/user-not-found') {
+                            // Offer to create new account
+                            const result = await Swal.fire({
+                                title: 'User Tidak Ditemukan',
+                                text: 'Email belum terdaftar. Buat akun baru?',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#059669',
+                                cancelButtonColor: '#6b7280',
+                                confirmButtonText: 'Ya, Buat Akun',
+                                cancelButtonText: 'Batal'
                             });
                             
-                        } catch (firebaseError) {
-                            console.error('Firebase login error:', firebaseError);
-                            Swal.close();
-                            
-                            // Create new user if doesn't exist
-                            if (firebaseError.code === 'auth/user-not-found') {
+                            if (result.isConfirmed) {
                                 try {
                                     const newUserCredential = await auth.createUserWithEmailAndPassword(email, password);
                                     const newUser = newUserCredential.user;
                                     
                                     // Save user data to database
-                                    await dbRef.users().child(newUser.uid).set({
+                                    await database.ref('users').child(newUser.uid).set({
                                         name: email.split('@')[0],
                                         email: email,
                                         role: 'student',
@@ -637,7 +648,7 @@
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Akun Baru Dibuat!',
-                                        text: `Selamat datang, ${email}`,
+                                        text: `Selamat datang, ${email.split('@')[0]}`,
                                         timer: 2000,
                                         showConfirmButton: false
                                     });
@@ -645,27 +656,57 @@
                                     console.error('Error creating user:', createError);
                                     Swal.fire({
                                         icon: 'error',
-                                        title: 'Login Gagal',
-                                        text: 'Email atau password salah. Gunakan akun demo.'
+                                        title: 'Gagal Membuat Akun',
+                                        text: createError.message
                                     });
                                 }
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Login Gagal',
-                                    text: 'Email atau password salah. Gunakan akun demo.'
-                                });
                             }
+                        } else if (firebaseError.code === 'auth/wrong-password') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Password Salah',
+                                text: 'Password yang Anda masukkan tidak benar'
+                            });
+                        } else if (firebaseError.code === 'auth/invalid-email') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Email Tidak Valid',
+                                text: 'Format email tidak benar'
+                            });
+                        } else if (firebaseError.code === 'auth/too-many-requests') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Terlalu Banyak Percobaan',
+                                text: 'Akun sementara diblokir karena terlalu banyak percobaan login gagal'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Login Gagal',
+                                text: firebaseError.message
+                            });
                         }
-                    } else {
-                        // Firebase not connected, show error
-                        Swal.close();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Koneksi Database Gagal',
-                            text: 'Gunakan akun demo untuk testing: admin@quiz.com / admin123'
-                        });
                     }
+                } else {
+                    // Firebase not connected, show error with instructions
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Database Tidak Terhubung',
+                        html: `
+                            <div class="text-left text-sm">
+                                <p class="mb-3">Tidak dapat terhubung ke Firebase Database.</p>
+                                <p class="mb-3"><strong>Periksa:</strong></p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>Konfigurasi Firebase sudah benar</li>
+                                    <li>Realtime Database sudah diaktifkan</li>
+                                    <li>Authentication sudah diaktifkan</li>
+                                    <li>Koneksi internet stabil</li>
+                                </ul>
+                            </div>
+                        `,
+                        confirmButtonText: 'OK'
+                    });
                 }
 
                 // Clear form
@@ -2697,52 +2738,97 @@
             }
         }
 
-        // Initialize sample data if needed
+        // Initialize sample data for first time setup
         async function initializeSampleData() {
+            if (!isFirebaseConnected) {
+                console.log('⚠️ Database offline - skipping sample data initialization');
+                return;
+            }
+            
             try {
-                // Check if admin user exists
-                const usersSnapshot = await dbRef.users().once('value');
-                const users = usersSnapshot.val() || {};
+                console.log('🔄 Creating sample admin user...');
                 
-                const hasAdmin = Object.values(users).some(user => user.role === 'admin');
+                // Check if admin user already exists
+                const adminSnapshot = await database.ref('users').orderByChild('email').equalTo('admin@quiz.com').once('value');
+                const existingAdmin = adminSnapshot.val();
                 
-                if (!hasAdmin) {
-                    console.log('Creating sample admin user...');
+                if (!existingAdmin) {
                     // Create admin user
-                    const adminCredential = await auth.createUserWithEmailAndPassword('admin@quiz.com', 'admin123');
-                    await dbRef.users().child(adminCredential.user.uid).set({
-                        name: 'Administrator',
-                        email: 'admin@quiz.com',
-                        role: 'admin',
-                        isActive: true,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                    
-                    // Create sample student
-                    const studentCredential = await auth.createUserWithEmailAndPassword('peserta@email.com', 'password123');
-                    await dbRef.users().child(studentCredential.user.uid).set({
-                        name: 'Peserta Demo',
-                        email: 'peserta@email.com',
-                        role: 'student',
-                        isActive: true,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                    
-                    // Create sample exam
-                    const examRef = await dbRef.exams().push();
-                    await examRef.set({
+                    try {
+                        const adminCredential = await auth.createUserWithEmailAndPassword('admin@quiz.com', 'admin123');
+                        
+                        // Save admin data to database
+                        await database.ref('users').child(adminCredential.user.uid).set({
+                            name: 'Administrator',
+                            email: 'admin@quiz.com',
+                            role: 'admin',
+                            isActive: true,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        console.log('✅ Sample admin user created: admin@quiz.com / admin123');
+                    } catch (authError) {
+                        if (authError.code === 'auth/email-already-in-use') {
+                            console.log('ℹ️ Admin user already exists in authentication');
+                        } else {
+                            throw authError;
+                        }
+                    }
+                } else {
+                    console.log('ℹ️ Sample admin user already exists');
+                }
+                
+                // Create sample student if not exists
+                const studentSnapshot = await database.ref('users').orderByChild('email').equalTo('peserta@email.com').once('value');
+                const existingStudent = studentSnapshot.val();
+                
+                if (!existingStudent) {
+                    try {
+                        const studentCredential = await auth.createUserWithEmailAndPassword('peserta@email.com', 'password123');
+                        
+                        await database.ref('users').child(studentCredential.user.uid).set({
+                            name: 'Peserta Demo',
+                            email: 'peserta@email.com',
+                            role: 'student',
+                            isActive: true,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        console.log('✅ Sample student user created: peserta@email.com / password123');
+                    } catch (authError) {
+                        if (authError.code === 'auth/email-already-in-use') {
+                            console.log('ℹ️ Student user already exists in authentication');
+                        } else {
+                            console.log('⚠️ Could not create student user:', authError.message);
+                        }
+                    }
+                }
+                
+                // Create sample exam if not exists
+                const examSnapshot = await database.ref('exams').once('value');
+                const existingExams = examSnapshot.val();
+                
+                if (!existingExams || Object.keys(existingExams).length === 0) {
+                    const sampleExam = {
                         title: 'Quiz Fiqh Dasar',
                         description: 'Ujian tentang dasar-dasar fiqh dalam Islam',
                         duration: 30,
                         totalQuestions: 5,
                         passingScore: 70,
                         isActive: true,
-                        createdBy: adminCredential.user.uid,
                         createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
+                    };
                     
-                    // Create sample questions
-                    const questions = [
+                    await database.ref('exams').push().set(sampleExam);
+                    console.log('✅ Sample exam created');
+                }
+                
+                // Create sample questions if not exists
+                const questionSnapshot = await database.ref('questions').once('value');
+                const existingQuestions = questionSnapshot.val();
+                
+                if (!existingQuestions || Object.keys(existingQuestions).length === 0) {
+                    const sampleQuestions = [
                         {
                             type: 'multiple_choice',
                             category: 'Fiqh',
@@ -2754,14 +2840,16 @@
                                 3: {text: 'الصوم', image: ''}
                             },
                             correctAnswer: 1,
-                            explanation: 'الشهادة هي الركن الأول من أركان الإسلام'
+                            explanation: 'الشهادة هي الركن الأول من أركان الإسلام',
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
                         },
                         {
                             type: 'true_false',
                             category: 'Akidah',
                             question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
                             correctAnswer: true,
-                            explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
+                            explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية',
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
                         },
                         {
                             type: 'multiple_choice',
@@ -2774,40 +2862,53 @@
                                 3: {text: 'ست صلوات', image: ''}
                             },
                             correctAnswer: 2,
-                            explanation: 'الصلوات المفروضة خمس في اليوم والليلة'
-                        },
-                        {
-                            type: 'short_answer',
-                            category: 'Akhlaq',
-                            question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
-                            correctAnswer: 'الصدق,الأمانة,التقوى',
-                            explanation: 'الصدق والأمانة والتقوى من أهم الصفات الإسلامية'
-                        },
-                        {
-                            type: 'essay',
-                            category: 'Sirah',
-                            question: 'اكتب فقرة قصيرة عن أهمية الصلاة في حياة المسلم',
-                            guideline: 'يجب أن تتضمن الإجابة: أهمية الصلاة، فوائدها الروحية، وأثرها على السلوك',
-                            maxScore: 100,
-                            explanation: 'الصلاة عماد الدين وصلة بين العبد وربه'
+                            explanation: 'الصلوات المفروضة خمس في اليوم والليلة',
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
                         }
                     ];
                     
-                    for (const question of questions) {
-                        await dbRef.questions().push().set({
-                            ...question,
-                            createdBy: adminCredential.user.uid,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        });
+                    for (const question of sampleQuestions) {
+                        await database.ref('questions').push().set(question);
                     }
                     
-                    console.log('✅ Sample data created successfully!');
-                    
-                    // Sign out after creating sample data
-                    await auth.signOut();
+                    console.log('✅ Sample questions created');
                 }
+                
+                console.log('🎉 Sample data initialization completed successfully!');
+                
             } catch (error) {
-                console.error('Error initializing sample data:', error);
+                console.error('❌ Error initializing sample data:', error);
+                
+                // Show user-friendly error message
+                if (error.code === 'auth/operation-not-allowed') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Authentication Belum Diaktifkan',
+                        html: `
+                            <div class="text-left text-sm">
+                                <p class="mb-3">Email/Password authentication belum diaktifkan di Firebase Console.</p>
+                                <p class="mb-3"><strong>Cara mengaktifkan:</strong></p>
+                                <ol class="list-decimal list-inside space-y-1">
+                                    <li>Buka <a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline">Firebase Console</a></li>
+                                    <li>Pilih project Anda</li>
+                                    <li>Klik menu <strong>Authentication</strong></li>
+                                    <li>Pilih tab <strong>Sign-in method</strong></li>
+                                    <li>Klik <strong>Email/Password</strong> dan aktifkan</li>
+                                    <li>Klik <strong>Save</strong></li>
+                                </ol>
+                                <p class="mt-3 text-green-600">Setelah diaktifkan, refresh halaman ini.</p>
+                            </div>
+                        `,
+                        confirmButtonText: 'OK, Saya Mengerti'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error Inisialisasi Data',
+                        text: `Gagal membuat data awal: ${error.message}`,
+                        confirmButtonText: 'OK'
+                    });
+                }
             }
         }
 
@@ -3475,5 +3576,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98080034f7ccfdea',t:'MTc1ODEwNTc4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9808213810a19c33',t:'MTc1ODEwNzE0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
