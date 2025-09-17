@@ -425,7 +425,7 @@
     </div>
 
     <script>
-// Your web app's Firebase configuration
+        // Firebase Configuration - GANTI DENGAN KONFIGURASI FIREBASE ANDA
 const firebaseConfig = {
   apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
   authDomain: "jual-beli-d9d80.firebaseapp.com",
@@ -436,8 +436,6 @@ const firebaseConfig = {
   appId: "1:1080322577223:web:624adcdbffb699850d7262"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
         // Initialize Firebase with proper error handling
         let database, auth, isFirebaseConnected = false;
         
@@ -2746,7 +2744,65 @@ const app = initializeApp(firebaseConfig);
                 return;
             }
             
-            try {                
+            try {
+                console.log('🔄 Creating sample admin user...');
+                
+                // Check if admin user already exists
+                const adminSnapshot = await database.ref('users').orderByChild('email').equalTo('admin@quiz.com').once('value');
+                const existingAdmin = adminSnapshot.val();
+                
+                if (!existingAdmin) {
+                    // Create admin user
+                    try {
+                        const adminCredential = await auth.createUserWithEmailAndPassword('admin@quiz.com', 'admin123');
+                        
+                        // Save admin data to database
+                        await database.ref('users').child(adminCredential.user.uid).set({
+                            name: 'Administrator',
+                            email: 'admin@quiz.com',
+                            role: 'admin',
+                            isActive: true,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        console.log('✅ Sample admin user created: admin@quiz.com / admin123');
+                    } catch (authError) {
+                        if (authError.code === 'auth/email-already-in-use') {
+                            console.log('ℹ️ Admin user already exists in authentication');
+                        } else {
+                            throw authError;
+                        }
+                    }
+                } else {
+                    console.log('ℹ️ Sample admin user already exists');
+                }
+                
+                // Create sample student if not exists
+                const studentSnapshot = await database.ref('users').orderByChild('email').equalTo('peserta@email.com').once('value');
+                const existingStudent = studentSnapshot.val();
+                
+                if (!existingStudent) {
+                    try {
+                        const studentCredential = await auth.createUserWithEmailAndPassword('peserta@email.com', 'password123');
+                        
+                        await database.ref('users').child(studentCredential.user.uid).set({
+                            name: 'Peserta Demo',
+                            email: 'peserta@email.com',
+                            role: 'student',
+                            isActive: true,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        console.log('✅ Sample student user created: peserta@email.com / password123');
+                    } catch (authError) {
+                        if (authError.code === 'auth/email-already-in-use') {
+                            console.log('ℹ️ Student user already exists in authentication');
+                        } else {
+                            console.log('⚠️ Could not create student user:', authError.message);
+                        }
+                    }
+                }
+                
                 // Create sample exam if not exists
                 const examSnapshot = await database.ref('exams').once('value');
                 const existingExams = examSnapshot.val();
@@ -3520,5 +3576,5 @@ const app = initializeApp(firebaseConfig);
         });
     </script>
 
-    </body>
+</body>
 </html>
