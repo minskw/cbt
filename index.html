@@ -466,39 +466,6 @@
                 }
             });
             
-async 
-    // Cek apakah admin dengan email ini sudah ada di database
-    const userSnapshot = await firebase.database().ref("users").orderByChild("email").equalTo(email).once("value");
-    if (userSnapshot.exists()) {
-      console.log("✅ Admin dengan email ini sudah ada di database.");
-      localStorage.setItem("adminInitialized", "true");
-      return;
-    }
-
-    // Buat akun baru di Authentication
-    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-    const newUser = userCredential.user;
-
-    // Simpan detail admin ke Realtime Database
-    await firebase.database().ref("users").child(newUser.uid).set({
-      name: "Administrator",
-      email: email,
-      role: "admin",
-      isActive: true,
-      createdAt: firebase.database.ServerValue.TIMESTAMP
-    });
-
-    // Set flag supaya tidak dijalankan lagi
-    localStorage.setItem("adminInitialized", "true");
-
-    console.log("🔥 Admin account berhasil dibuat:", email);
-    alert("✅ Akun admin berhasil dibuat!\nEmail: " + email + "\nPassword: " + password);
-
-  } catch (error) {
-    console.error("❌ Gagal inisialisasi admin:", error);
-    alert("Error: " + error.message);
-  }
-}
 
         // Database helper functions
         const dbRef = {
@@ -571,25 +538,26 @@ async
                 // Try Firebase authentication first
                 if (isFirebaseConnected) {
                     try {
-                        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                        currentUser = userCredential.user;
+const userCredential = await auth.signInWithEmailAndPassword(email, password);
+currentUser = userCredential.user;
                         
-                        // Get user data from database
-                        const userSnapshot = await database.ref('users').child(currentUser.uid).once('value');
-                        const userData = userSnapshot.val();
+// Get user data from database
+const userSnapshot = await database.ref('users').child(currentUser.uid).once('value');
+const userData = userSnapshot.val();
                         
-                        loginModal.classList.add('hidden');
-                        loginBtn.classList.add('hidden');
-                        logoutBtn.classList.remove('hidden');
+loginModal.classList.add('hidden');
+loginBtn.classList.add('hidden');
+logoutBtn.classList.remove('hidden');
 
-                        Swal.close();
+Swal.close();
                         
-                        if (userData && userData.role === 'admin') {
-                            adminBtn.classList.remove('hidden');
-                            showAdminPanel();
-                        } else {
-                            showStudentDashboard();
-                        }
+if (userData && userData.role === 'admin') {
+    adminBtn.classList.remove('hidden');
+    showAdminPanel();
+} else {
+    showStudentDashboard();
+}
+
 
                         Swal.fire({
                             icon: 'success',
