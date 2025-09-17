@@ -1,24 +1,3479 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>cbt-MIN SINGKAWANG</title>
-  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/9/9a/Kementerian_Agama_new_logo.png" type="image/png">
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      overflow: auto;
-    }
-    iframe {
-      width: 100vw;
-      height: 100vh;
-      border: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBT MIN SINGKAWANG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SheetJS for Excel handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Firebase SDK untuk Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        .arabic-text { font-family: 'Amiri', serif; }
+        .gradient-bg { background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .quiz-card { transition: all 0.3s ease; }
+        .quiz-card:hover { transform: translateY(-5px); }
+        .islamic-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23065f46' fill-opacity='0.05'%3E%3Cpath d='M30 30c0-16.569 13.431-30 30-30v60c-16.569 0-30-13.431-30-30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
 </head>
-<body>
-  <iframe src="https://script.google.com/macros/s/AKfycbzLC6HlxyvbVqLUv7t_yzHNLY8Lt7KJ5hzT5YkArH9z0xoYhD0qUb_nc5du4ACkXhpF/exec" allowfullscreen></iframe>
-</body>
+<body class="bg-gray-50 islamic-pattern min-h-screen">
+    <!-- Navigation -->
+    <nav class="gradient-bg shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-12 w-12 mr-4 rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <i class="fas fa-mosque text-white text-2xl mr-4 hidden"></i>
+                    <div class="text-white">
+                        <div class="text-xl font-bold">CBT MIN SINGKAWANG</div>
+                        <div class="text-sm text-green-100">Penilaian Sumatif Akhir Semester</div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="connectionStatus" class="text-xs text-green-200 hidden">
+                        <i class="fas fa-circle text-green-400 mr-1"></i>Online
+                    </div>
+                    <button id="loginBtn" class="text-white hover:text-green-200 px-3 py-2 rounded-md">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </button>
+                    <button id="adminBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md hidden">
+                        <i class="fas fa-cog mr-2"></i>Admin Panel
+                    </button>
+                    <button id="logoutBtn" class="text-white hover:text-green-200 px-3 py-2 rounded-md hidden">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Page (Default) -->
+        <div id="welcomePage">
+            <div class="text-center mb-12">
+                <div class="mb-8">
+                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-24 w-24 mx-auto mb-6 rounded-full shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="fas fa-mosque text-green-600 text-6xl mb-6 hidden"></i>
+                    <h1 class="text-5xl font-bold text-gray-800 mb-3">CBT MIN SINGKAWANG</h1>
+                    <p class="text-2xl text-gray-700 mb-2 font-semibold">Penilaian Sumatif Akhir Semester</p>
+                    <p class="text-lg text-gray-600">Tahun Ajaran 2025/2026 Semester 1</p>
+                </div>
+                
+                <div class="max-w-4xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <i class="fas fa-book-open text-green-600 text-3xl mb-4"></i>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">6 Tipe Soal</h3>
+                            <p class="text-gray-600">Pilihan Ganda, Menjodohkan, Benar-Salah, Isian, Esai, dan PG Kompleks</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <i class="fas fa-users text-green-600 text-3xl mb-4"></i>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Panel Admin</h3>
+                            <p class="text-gray-600">Kelola peserta, ujian, soal, dan hasil secara lengkap</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <i class="fas fa-image text-green-600 text-3xl mb-4"></i>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Soal Bergambar</h3>
+                            <p class="text-gray-600">Dukungan gambar pada pertanyaan dan opsi jawaban</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-8 text-white text-center">
+                        <h2 class="text-2xl font-bold mb-4">Mulai Pengalaman Quiz Islami Anda</h2>
+                        <p class="text-green-100 mb-6">Login untuk mengakses quiz atau panel admin</p>
+                        <div class="space-x-4">
+                            <button onclick="document.getElementById('loginModal').classList.remove('hidden')" class="bg-white text-green-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition duration-200">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login Sekarang
+                            </button>
+                        </div>
+                        <div class="mt-6 text-sm text-green-100">
+                            <p><strong>Demo Admin:</strong> admin@quiz.com / admin123</p>
+                            <p><strong>Demo Peserta:</strong> peserta@email.com / password123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                    <div class="text-center mb-6">
+                        <i class="fas fa-user-circle text-green-600 text-4xl mb-2"></i>
+                        <h2 class="text-2xl font-bold text-gray-800">Login</h2>
+                    </div>
+                    <form id="loginForm">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                            <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                            <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="button" id="closeLoginModal" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Dashboard -->
+        <div id="studentDashboard" class="hidden">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">CBT MIN SINGKAWANG</h1>
+                <p class="text-xl text-gray-700 mb-1 font-semibold">Penilaian Sumatif Akhir Semester</p>
+                <p class="text-gray-600 text-lg">Tahun Ajaran 2025/2026 Semester 1</p>
+            </div>
+
+            <!-- Available Quizzes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="quizList">
+                <!-- Quiz cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Quiz Taking Interface -->
+        <div id="quizInterface" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="quizTitle" class="text-2xl font-bold text-gray-800"></h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
+                        </div>
+                        <div id="timer" class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span id="timeLeft">30:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Content -->
+                <div id="questionContent" class="mb-6">
+                    <!-- Question will be populated here -->
+                </div>
+
+                <!-- Navigation -->
+                <div class="flex justify-between">
+                    <button id="prevBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left mr-2"></i>Sebelumnya
+                    </button>
+                    <button id="nextBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                        Selanjutnya<i class="fas fa-chevron-right ml-2"></i>
+                    </button>
+                    <button id="submitQuizBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md hidden">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg">
+                <!-- Admin Navigation -->
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6">
+                        <button class="admin-tab py-4 px-1 border-b-2 border-green-500 text-green-600 font-medium" data-tab="participants">
+                            <i class="fas fa-users mr-2"></i>Peserta
+                        </button>
+                        <button class="admin-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="exams">
+                            <i class="fas fa-clipboard-list mr-2"></i>Ujian
+                        </button>
+                        <button class="admin-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="questions">
+                            <i class="fas fa-question-circle mr-2"></i>Soal
+                        </button>
+                        <button class="admin-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="results">
+                            <i class="fas fa-chart-bar mr-2"></i>Hasil
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Admin Content -->
+                <div class="p-6">
+                    <!-- Participants Tab -->
+                    <div id="participantsTab" class="admin-content">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Manajemen Peserta</h3>
+                            <div class="flex space-x-2">
+                                <button id="downloadParticipantTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                                    <i class="fas fa-download mr-2"></i>Template Excel
+                                </button>
+                                <button id="importParticipantsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
+                                    <i class="fas fa-upload mr-2"></i>Import Excel
+                                </button>
+                                <button id="addParticipantBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                                    <i class="fas fa-plus mr-2"></i>Tambah Peserta
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="participantsTable" class="divide-y divide-gray-200">
+                                    <!-- Participants will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Exams Tab -->
+                    <div id="examsTab" class="admin-content hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Manajemen Ujian</h3>
+                            <button id="addExamBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                                <i class="fas fa-plus mr-2"></i>Buat Ujian
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="examsList">
+                            <!-- Exams will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Questions Tab -->
+                    <div id="questionsTab" class="admin-content hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Bank Soal</h3>
+                            <div class="flex space-x-2">
+                                <button id="downloadQuestionTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                                    <i class="fas fa-download mr-2"></i>Template Excel
+                                </button>
+                                <button id="importQuestionsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md">
+                                    <i class="fas fa-upload mr-2"></i>Import Excel
+                                </button>
+                                <button id="addQuestionBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                                    <i class="fas fa-plus mr-2"></i>Tambah Soal
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-4" id="questionsList">
+                            <!-- Questions will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Results Tab -->
+                    <div id="resultsTab" class="admin-content hidden">
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Hasil Ujian</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-users text-blue-600 text-2xl mr-3"></i>
+                                        <div>
+                                            <p class="text-sm text-gray-600">Total Peserta</p>
+                                            <p class="text-2xl font-bold text-blue-600" id="totalParticipants">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
+                                        <div>
+                                            <p class="text-sm text-gray-600">Lulus</p>
+                                            <p class="text-2xl font-bold text-green-600" id="passedCount">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-red-50 p-4 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-times-circle text-red-600 text-2xl mr-3"></i>
+                                        <div>
+                                            <p class="text-sm text-gray-600">Tidak Lulus</p>
+                                            <p class="text-2xl font-bold text-red-600" id="failedCount">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peserta</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ujian</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Skor</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTable" class="divide-y divide-gray-200">
+                                    <!-- Results will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="text-center mb-6">
+                    <i class="fas fa-upload text-blue-600 text-4xl mb-2"></i>
+                    <h2 class="text-2xl font-bold text-gray-800" id="importModalTitle">Import Data</h2>
+                    <p class="text-gray-600 mt-2" id="importModalDescription">Pilih file Excel untuk diimport</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">File Excel (.xlsx, .xls)</label>
+                    <input type="file" id="importFileInput" accept=".xlsx,.xls" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Maksimal ukuran file: 5MB</p>
+                </div>
+                
+                <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-2"></i>
+                        <div class="text-sm text-yellow-800">
+                            <p class="font-semibold mb-1">Petunjuk Import:</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Gunakan template Excel yang telah disediakan</li>
+                                <li>Pastikan format data sesuai dengan template</li>
+                                <li>Data yang sudah ada akan ditimpa jika email sama</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between">
+                    <button id="closeImportModal" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                    <button id="processImportBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md disabled:opacity-50" disabled>
+                        <i class="fas fa-upload mr-2"></i>Import Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="questionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Tambah/Edit Soal</h3>
+                        <button id="closeQuestionModal" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <form id="questionForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Tipe Soal</label>
+                                <select id="questionType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                    <option value="">Pilih Tipe Soal</option>
+                                    <option value="multiple_choice">Pilihan Ganda</option>
+                                    <option value="complex_multiple_choice">Pilihan Ganda Kompleks</option>
+                                    <option value="matching">Menjodohkan</option>
+                                    <option value="true_false">Benar-Salah</option>
+                                    <option value="short_answer">Isian Singkat</option>
+                                    <option value="essay">Esai Terbatas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
+                                <input type="text" id="questionCategory" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Contoh: Fiqh, Akidah, dll">
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Pertanyaan</label>
+                            <textarea id="questionText" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 arabic-text" rows="3" required></textarea>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Pertanyaan (URL)</label>
+                            <input type="url" id="questionImage" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="https://example.com/image.jpg">
+                        </div>
+
+                        <div id="optionsContainer" class="mt-6">
+                            <!-- Options will be populated based on question type -->
+                        </div>
+
+                        <div class="flex justify-end space-x-4 mt-6">
+                            <button type="button" id="cancelQuestionBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">Simpan Soal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration - Real Working Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
+            authDomain: "jual-beli-d9d80.firebaseapp.com",
+            databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "jual-beli-d9d80",
+            storageBucket: "jual-beli-d9d80.firebasestorage.app",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:624adcdbffb699850d7262"
+        };
+
+        // Initialize Firebase with error handling
+        let database, auth, isFirebaseConnected = false;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            auth = firebase.auth();
+            isFirebaseConnected = true;
+            console.log("🔥 Firebase connected successfully!");
+            
+            // Test connection
+            database.ref('.info/connected').on('value', (snapshot) => {
+                const connectionStatus = document.getElementById('connectionStatus');
+                if (snapshot.val() === true) {
+                    console.log('✅ Database connection active');
+                    isFirebaseConnected = true;
+                    if (connectionStatus) {
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>Online';
+                        connectionStatus.classList.remove('hidden');
+                    }
+                } else {
+                    console.log('❌ Database connection lost');
+                    isFirebaseConnected = false;
+                    if (connectionStatus) {
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Offline';
+                        connectionStatus.classList.remove('hidden');
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("❌ Firebase connection error:", error);
+            isFirebaseConnected = false;
+        }
+
+        // Database helper functions
+        const dbRef = {
+            users: () => database.ref('users'),
+            exams: () => database.ref('exams'),
+            questions: () => database.ref('questions'),
+            results: () => database.ref('results')
+        };
+
+        // Global Variables
+        let currentUser = null;
+        let currentQuiz = null;
+        let currentQuestionIndex = 0;
+        let quizAnswers = {};
+        let quizTimer = null;
+        let timeLeft = 0;
+        let currentQuestions = [];
+
+        // DOM Elements
+        const loginBtn = document.getElementById('loginBtn');
+        const adminBtn = document.getElementById('adminBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginModal = document.getElementById('loginModal');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        const loginForm = document.getElementById('loginForm');
+        const studentDashboard = document.getElementById('studentDashboard');
+        const adminPanel = document.getElementById('adminPanel');
+        const quizInterface = document.getElementById('quizInterface');
+
+        // Event Listeners
+        loginBtn.addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+
+        closeLoginModal.addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        loginModal.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.classList.add('hidden');
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Gagal',
+                    text: 'Email dan password harus diisi'
+                });
+                return;
+            }
+
+            // Show loading
+            Swal.fire({
+                title: 'Memproses Login...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                // Check if this is demo login
+                if (email === 'admin@quiz.com' && password === 'admin123') {
+                    // Demo admin login
+                    currentUser = { uid: 'demo-admin', email: 'admin@quiz.com', role: 'admin' };
+                    
+                    loginModal.classList.add('hidden');
+                    loginBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    adminBtn.classList.remove('hidden');
+                    
+                    Swal.close();
+                    showAdminPanel();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login Berhasil!',
+                        text: 'Selamat datang, Administrator',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                } else if (email === 'peserta@email.com' && password === 'password123') {
+                    // Demo student login
+                    currentUser = { uid: 'demo-student', email: 'peserta@email.com', role: 'student' };
+                    
+                    loginModal.classList.add('hidden');
+                    loginBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    
+                    Swal.close();
+                    showStudentDashboard();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login Berhasil!',
+                        text: 'Selamat datang, Peserta Demo',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                } else {
+                    // Try Firebase authentication for real users
+                    if (isFirebaseConnected) {
+                        try {
+                            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                            currentUser = userCredential.user;
+                            
+                            // Get user data from database
+                            const userSnapshot = await dbRef.users().child(currentUser.uid).once('value');
+                            const userData = userSnapshot.val();
+                            
+                            loginModal.classList.add('hidden');
+                            loginBtn.classList.add('hidden');
+                            logoutBtn.classList.remove('hidden');
+
+                            Swal.close();
+                            
+                            if (userData && userData.role === 'admin') {
+                                adminBtn.classList.remove('hidden');
+                                showAdminPanel();
+                            } else {
+                                showStudentDashboard();
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Login Berhasil!',
+                                text: `Selamat datang, ${userData ? userData.name : email}`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            
+                        } catch (firebaseError) {
+                            console.error('Firebase login error:', firebaseError);
+                            Swal.close();
+                            
+                            // Create new user if doesn't exist
+                            if (firebaseError.code === 'auth/user-not-found') {
+                                try {
+                                    const newUserCredential = await auth.createUserWithEmailAndPassword(email, password);
+                                    const newUser = newUserCredential.user;
+                                    
+                                    // Save user data to database
+                                    await dbRef.users().child(newUser.uid).set({
+                                        name: email.split('@')[0],
+                                        email: email,
+                                        role: 'student',
+                                        isActive: true,
+                                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                                    });
+                                    
+                                    currentUser = newUser;
+                                    loginModal.classList.add('hidden');
+                                    loginBtn.classList.add('hidden');
+                                    logoutBtn.classList.remove('hidden');
+                                    
+                                    showStudentDashboard();
+                                    
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Akun Baru Dibuat!',
+                                        text: `Selamat datang, ${email}`,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                } catch (createError) {
+                                    console.error('Error creating user:', createError);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Login Gagal',
+                                        text: 'Email atau password salah. Gunakan akun demo.'
+                                    });
+                                }
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Login Gagal',
+                                    text: 'Email atau password salah. Gunakan akun demo.'
+                                });
+                            }
+                        }
+                    } else {
+                        // Firebase not connected, show error
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Koneksi Database Gagal',
+                            text: 'Gunakan akun demo untuk testing: admin@quiz.com / admin123'
+                        });
+                    }
+                }
+
+                // Clear form
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Gagal',
+                    text: 'Terjadi kesalahan saat login. Coba lagi.'
+                });
+            }
+        });
+
+        adminBtn.addEventListener('click', showAdminPanel);
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                // Sign out from Firebase if real user
+                if (currentUser && !currentUser.uid.startsWith('demo-')) {
+                    await auth.signOut();
+                }
+                
+                currentUser = null;
+                
+                loginBtn.classList.remove('hidden');
+                adminBtn.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                
+                hideAllPanels();
+                document.getElementById('welcomePage').classList.remove('hidden');
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Logout Berhasil',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+                // Still logout even if Firebase fails
+                currentUser = null;
+                loginBtn.classList.remove('hidden');
+                adminBtn.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                hideAllPanels();
+                document.getElementById('welcomePage').classList.remove('hidden');
+            }
+        });
+
+        // Admin Tab Navigation
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const tabName = e.target.closest('.admin-tab').dataset.tab;
+                switchAdminTab(tabName);
+            });
+        });
+
+        // Question Type Change Handler
+        document.getElementById('questionType').addEventListener('change', (e) => {
+            generateOptionsForQuestionType(e.target.value);
+        });
+
+        // Question Modal Handlers
+        function setupQuestionModal() {
+            const addQuestionBtn = document.getElementById('addQuestionBtn');
+            const closeQuestionModal = document.getElementById('closeQuestionModal');
+            const cancelQuestionBtn = document.getElementById('cancelQuestionBtn');
+            const questionForm = document.getElementById('questionForm');
+            const questionModal = document.getElementById('questionModal');
+            
+            if (addQuestionBtn) {
+                addQuestionBtn.addEventListener('click', () => {
+                    questionModal.classList.remove('hidden');
+                    questionForm.reset();
+                    // Clear editing state when adding new question
+                    questionForm.removeAttribute('data-editing-id');
+                    generateOptionsForQuestionType('');
+                });
+            }
+
+            if (closeQuestionModal) {
+                closeQuestionModal.addEventListener('click', () => {
+                    questionModal.classList.add('hidden');
+                });
+            }
+
+            if (cancelQuestionBtn) {
+                cancelQuestionBtn.addEventListener('click', () => {
+                    questionModal.classList.add('hidden');
+                });
+            }
+
+            // Close modal when clicking outside
+            if (questionModal) {
+                questionModal.addEventListener('click', (e) => {
+                    if (e.target === questionModal) {
+                        questionModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (questionForm) {
+                questionForm.addEventListener('submit', saveQuestion);
+            }
+        }
+
+        // Functions
+        function hideAllPanels() {
+            document.getElementById('welcomePage').classList.add('hidden');
+            studentDashboard.classList.add('hidden');
+            adminPanel.classList.add('hidden');
+            quizInterface.classList.add('hidden');
+        }
+
+        function showStudentDashboard() {
+            hideAllPanels();
+            studentDashboard.classList.remove('hidden');
+            loadQuizzesForStudent();
+        }
+
+        function showAdminPanel() {
+            hideAllPanels();
+            adminPanel.classList.remove('hidden');
+            switchAdminTab('participants');
+            
+            // Setup admin button event listeners
+            setupAddParticipantBtn();
+            setupAddExamBtn();
+            setupQuestionModal();
+            setupImportModal();
+        }
+
+        function switchAdminTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('border-green-500', 'text-green-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-green-500', 'text-green-600');
+
+            // Show/hide content
+            document.querySelectorAll('.admin-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.getElementById(`${tabName}Tab`).classList.remove('hidden');
+
+            // Load data for the tab
+            switch(tabName) {
+                case 'participants':
+                    loadParticipants();
+                    break;
+                case 'exams':
+                    loadExams();
+                    break;
+                case 'questions':
+                    loadQuestions();
+                    break;
+                case 'results':
+                    loadResults();
+                    break;
+            }
+        }
+
+        async function loadQuizzesForStudent() {
+            const quizList = document.getElementById('quizList');
+            quizList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Memuat quiz...</p></div>';
+
+            try {
+                let exams = {};
+                
+                // If demo user, use demo data
+                if (currentUser && currentUser.uid === 'demo-student') {
+                    exams = {
+                        'demo-exam-1': {
+                            title: 'Quiz Fiqh Dasar',
+                            description: 'Ujian tentang dasar-dasar fiqh dalam Islam',
+                            duration: 30,
+                            totalQuestions: 5,
+                            passingScore: 70,
+                            isActive: true
+                        },
+                        'demo-exam-2': {
+                            title: 'Quiz Akidah Islam',
+                            description: 'Ujian tentang akidah dan keimanan dalam Islam',
+                            duration: 25,
+                            totalQuestions: 4,
+                            passingScore: 75,
+                            isActive: true
+                        }
+                    };
+                } else if (isFirebaseConnected) {
+                    // Load from Firebase for real users
+                    try {
+                        const snapshot = await dbRef.exams().once('value');
+                        exams = snapshot.val() || {};
+                    } catch (error) {
+                        console.error('Error loading exams:', error);
+                        // Fallback to demo data if Firebase fails
+                        exams = {
+                            'fallback-exam-1': {
+                                title: 'Quiz Demo (Offline)',
+                                description: 'Quiz demo saat database offline',
+                                duration: 15,
+                                totalQuestions: 3,
+                                passingScore: 70,
+                                isActive: true
+                            }
+                        };
+                    }
+                } else {
+                    // Firebase not connected, use fallback data
+                    exams = {
+                        'offline-exam-1': {
+                            title: 'Quiz Demo (Offline)',
+                            description: 'Quiz demo saat database offline',
+                            duration: 15,
+                            totalQuestions: 3,
+                            passingScore: 70,
+                            isActive: true
+                        }
+                    };
+                }
+                
+                quizList.innerHTML = '';
+                
+                Object.keys(exams).forEach(examId => {
+                    const quiz = exams[examId];
+                    if (quiz.isActive) {
+                        const quizCard = document.createElement('div');
+                        quizCard.className = 'bg-white rounded-lg shadow-lg p-6 quiz-card card-shadow';
+                        quizCard.innerHTML = `
+                            <div class="text-center mb-4">
+                                <i class="fas fa-clipboard-list text-green-600 text-3xl mb-2"></i>
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">${quiz.title}</h3>
+                                <p class="text-gray-600 mb-4">${quiz.description}</p>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Durasi:</span>
+                                    <span class="font-medium">${quiz.duration} menit</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Jumlah Soal:</span>
+                                    <span class="font-medium">${quiz.totalQuestions} soal</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Nilai Lulus:</span>
+                                    <span class="font-medium">${quiz.passingScore}%</span>
+                                </div>
+                            </div>
+                            <button onclick="startQuiz('${examId}')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200">
+                                <i class="fas fa-play mr-2"></i>Mulai Quiz
+                            </button>
+                        `;
+                        quizList.appendChild(quizCard);
+                    }
+                });
+
+                if (Object.keys(exams).length === 0) {
+                    quizList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-clipboard-list text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">Belum ada quiz yang tersedia</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading quizzes:', error);
+                quizList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i><p class="text-red-500">Gagal memuat quiz</p></div>';
+            }
+        }
+
+        async function loadParticipants() {
+            const participantsTable = document.getElementById('participantsTable');
+            participantsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
+
+            try {
+                let users = {};
+                
+                // If demo admin, use demo data
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    users = {
+                        'demo-student': {
+                            name: 'Peserta Demo',
+                            email: 'peserta@email.com',
+                            role: 'student',
+                            isActive: true
+                        },
+                        'student-2': {
+                            name: 'Ahmad Fauzi',
+                            email: 'ahmad@email.com',
+                            role: 'student',
+                            isActive: true
+                        },
+                        'student-3': {
+                            name: 'Siti Aminah',
+                            email: 'siti@email.com',
+                            role: 'student',
+                            isActive: false
+                        }
+                    };
+                } else if (isFirebaseConnected) {
+                    // Load from Firebase for real admin
+                    try {
+                        const snapshot = await dbRef.users().once('value');
+                        users = snapshot.val() || {};
+                    } catch (error) {
+                        console.error('Error loading participants:', error);
+                        users = {};
+                    }
+                } else {
+                    // Firebase not connected
+                    users = {
+                        'offline-student': {
+                            name: 'Demo Offline',
+                            email: 'offline@demo.com',
+                            role: 'student',
+                            isActive: true
+                        }
+                    };
+                }
+                
+                participantsTable.innerHTML = '';
+                
+                Object.keys(users).forEach(userId => {
+                    const user = users[userId];
+                    if (user.role === 'student') {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.name || 'Tidak ada nama'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.email}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${user.isActive ? 'Aktif' : 'Nonaktif'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button onclick="editParticipant('${userId}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                                    <i class="fas fa-edit mr-1"></i>Edit
+                                </button>
+                                <button onclick="deleteParticipant('${userId}')" class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash mr-1"></i>Hapus
+                                </button>
+                            </td>
+                        `;
+                        participantsTable.appendChild(row);
+                    }
+                });
+
+                if (participantsTable.children.length === 0) {
+                    participantsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada peserta terdaftar</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading participants:', error);
+                participantsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data peserta</td></tr>';
+            }
+        }
+
+        async function loadExams() {
+            const examsList = document.getElementById('examsList');
+            examsList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Memuat ujian...</p></div>';
+
+            try {
+                let exams = {};
+                
+                // If demo admin, use demo data
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    exams = {
+                        'demo-exam-1': {
+                            title: 'Quiz Fiqh Dasar',
+                            description: 'Ujian tentang dasar-dasar fiqh dalam Islam',
+                            duration: 30,
+                            totalQuestions: 5,
+                            passingScore: 70,
+                            isActive: true
+                        },
+                        'demo-exam-2': {
+                            title: 'Quiz Akidah Islam',
+                            description: 'Ujian tentang akidah dan keimanan dalam Islam',
+                            duration: 25,
+                            totalQuestions: 4,
+                            passingScore: 75,
+                            isActive: true
+                        },
+                        'demo-exam-3': {
+                            title: 'Quiz Sejarah Islam',
+                            description: 'Ujian tentang sejarah perkembangan Islam',
+                            duration: 40,
+                            totalQuestions: 8,
+                            passingScore: 80,
+                            isActive: false
+                        }
+                    };
+                } else {
+                    // Load from Firebase for real admin
+                    const snapshot = await dbRef.exams().once('value');
+                    exams = snapshot.val() || {};
+                }
+                
+                examsList.innerHTML = '';
+                
+                Object.keys(exams).forEach(examId => {
+                    const quiz = exams[examId];
+                    const examCard = document.createElement('div');
+                    examCard.className = 'bg-white rounded-lg shadow-lg p-6';
+                    examCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <h4 class="text-lg font-bold text-gray-800">${quiz.title}</h4>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${quiz.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${quiz.isActive ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 mb-4">${quiz.description}</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Durasi:</span>
+                                <span>${quiz.duration} menit</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Soal:</span>
+                                <span>${quiz.totalQuestions} soal</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Nilai Lulus:</span>
+                                <span>${quiz.passingScore}%</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editExam('${examId}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            <button onclick="deleteExam('${examId}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm">
+                                <i class="fas fa-trash mr-1"></i>Hapus
+                            </button>
+                        </div>
+                    `;
+                    examsList.appendChild(examCard);
+                });
+
+                if (Object.keys(exams).length === 0) {
+                    examsList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-clipboard-list text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">Belum ada ujian dibuat</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading exams:', error);
+                examsList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i><p class="text-red-500">Gagal memuat ujian</p></div>';
+            }
+        }
+
+        async function loadQuestions() {
+            const questionsList = document.getElementById('questionsList');
+            questionsList.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Memuat soal...</p></div>';
+
+            try {
+                let questions = {};
+                
+                // If demo admin, use demo data
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    questions = {
+                        'demo-q1': {
+                            type: 'multiple_choice',
+                            category: 'Fiqh',
+                            question: 'ما هو الركن الأول من أركان الإسلام؟',
+                            options: {
+                                0: {text: 'الصلاة', image: ''},
+                                1: {text: 'الشهادة', image: ''},
+                                2: {text: 'الزكاة', image: ''},
+                                3: {text: 'الصوم', image: ''}
+                            },
+                            correctAnswer: 1,
+                            explanation: 'الشهادة هي الركن الأول من أركان الإسلام'
+                        },
+                        'demo-q2': {
+                            type: 'true_false',
+                            category: 'Akidah',
+                            question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
+                            correctAnswer: true,
+                            explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
+                        },
+                        'demo-q3': {
+                            type: 'short_answer',
+                            category: 'Akhlaq',
+                            question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
+                            correctAnswer: 'الصدق',
+                            explanation: 'الصدق من أهم الصفات الإسلامية'
+                        },
+                        'demo-q4': {
+                            type: 'essay',
+                            category: 'Sirah',
+                            question: 'اكتب فقرة قصيرة عن أهمية الصلاة في حياة المسلم',
+                            guideline: 'يجب أن تتضمن الإجابة: أهمية الصلاة، فوائدها الروحية، وأثرها على السلوك',
+                            maxScore: 100,
+                            explanation: 'الصلاة عماد الدين وصلة بين العبد وربه'
+                        },
+                        'demo-q5': {
+                            type: 'matching',
+                            category: 'Fiqh',
+                            question: 'جودوهكان الأركان التالية مع تعريفها الصحيح',
+                            columnA: {
+                                0: 'الشهادة',
+                                1: 'الصلاة',
+                                2: 'الزكاة',
+                                3: 'الصوم'
+                            },
+                            columnB: {
+                                0: 'الإمساك عن الطعام والشراب',
+                                1: 'إخراج المال للفقراء',
+                                2: 'الصلة مع الله',
+                                3: 'الإقرار بوحدانية الله'
+                            },
+                            correctAnswer: '1-3,2-2,3-1,4-0',
+                            explanation: 'كل ركن له تعريفه الخاص'
+                        }
+                    };
+                } else {
+                    // Load from Firebase for real admin
+                    const snapshot = await dbRef.questions().once('value');
+                    questions = snapshot.val() || {};
+                }
+                
+                questionsList.innerHTML = '';
+                
+                Object.keys(questions).forEach(questionId => {
+                    const question = questions[questionId];
+                    const questionCard = document.createElement('div');
+                    questionCard.className = 'bg-white border border-gray-200 rounded-lg p-4';
+                    questionCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 mr-2">
+                                        ${getQuestionTypeLabel(question.type)}
+                                    </span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        ${question.category || 'Umum'}
+                                    </span>
+                                </div>
+                                <p class="text-gray-800 arabic-text mb-2">${question.question}</p>
+                                ${question.explanation ? `<p class="text-sm text-gray-600">Penjelasan: ${question.explanation}</p>` : ''}
+                            </div>
+                            <div class="flex space-x-2 ml-4">
+                                <button onclick="editQuestion('${questionId}')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-800" onclick="deleteQuestion('${questionId}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    questionsList.appendChild(questionCard);
+                });
+
+                if (Object.keys(questions).length === 0) {
+                    questionsList.innerHTML = '<div class="text-center py-8"><i class="fas fa-question-circle text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">Belum ada soal dalam bank soal</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                questionsList.innerHTML = '<div class="text-center py-8"><i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i><p class="text-red-500">Gagal memuat soal</p></div>';
+            }
+        }
+
+        async function loadResults() {
+            try {
+                let results = {};
+                let users = {};
+                let exams = {};
+                
+                // If demo admin, use demo data
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    results = {
+                        'result-1': {
+                            userId: 'demo-student',
+                            examId: 'demo-exam-1',
+                            score: 85,
+                            correctAnswers: 4,
+                            totalQuestions: 5,
+                            passed: true,
+                            completedAt: Date.now() - 86400000 // 1 day ago
+                        },
+                        'result-2': {
+                            userId: 'student-2',
+                            examId: 'demo-exam-1',
+                            score: 60,
+                            correctAnswers: 3,
+                            totalQuestions: 5,
+                            passed: false,
+                            completedAt: Date.now() - 172800000 // 2 days ago
+                        },
+                        'result-3': {
+                            userId: 'student-3',
+                            examId: 'demo-exam-2',
+                            score: 90,
+                            correctAnswers: 4,
+                            totalQuestions: 4,
+                            passed: true,
+                            completedAt: Date.now() - 259200000 // 3 days ago
+                        }
+                    };
+                    
+                    users = {
+                        'demo-student': { name: 'Peserta Demo', email: 'peserta@email.com' },
+                        'student-2': { name: 'Ahmad Fauzi', email: 'ahmad@email.com' },
+                        'student-3': { name: 'Siti Aminah', email: 'siti@email.com' }
+                    };
+                    
+                    exams = {
+                        'demo-exam-1': { title: 'Quiz Fiqh Dasar' },
+                        'demo-exam-2': { title: 'Quiz Akidah Islam' }
+                    };
+                } else {
+                    // Load from Firebase for real admin
+                    const resultsSnapshot = await dbRef.results().once('value');
+                    results = resultsSnapshot.val() || {};
+                    
+                    const usersSnapshot = await dbRef.users().once('value');
+                    users = usersSnapshot.val() || {};
+                    
+                    const examsSnapshot = await dbRef.exams().once('value');
+                    exams = examsSnapshot.val() || {};
+                }
+                
+                // Update statistics
+                const totalResults = Object.keys(results).length;
+                const passedResults = Object.values(results).filter(r => r.passed).length;
+                const failedResults = totalResults - passedResults;
+                
+                document.getElementById('totalParticipants').textContent = totalResults;
+                document.getElementById('passedCount').textContent = passedResults;
+                document.getElementById('failedCount').textContent = failedResults;
+
+                const resultsTable = document.getElementById('resultsTable');
+                resultsTable.innerHTML = '';
+                
+                Object.keys(results).forEach(resultId => {
+                    const result = results[resultId];
+                    const user = users[result.userId] || {};
+                    const exam = exams[result.examId] || {};
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.name || 'Unknown'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${exam.title || 'Unknown'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${result.score}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${result.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${result.passed ? 'Lulus' : 'Tidak Lulus'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(result.completedAt).toLocaleString('id-ID')}</td>
+                    `;
+                    resultsTable.appendChild(row);
+                });
+
+                if (Object.keys(results).length === 0) {
+                    resultsTable.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Belum ada hasil ujian</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('resultsTable').innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">Gagal memuat hasil ujian</td></tr>';
+            }
+        }
+
+        function getQuestionTypeLabel(type) {
+            const labels = {
+                'multiple_choice': 'Pilihan Ganda',
+                'complex_multiple_choice': 'PG Kompleks',
+                'matching': 'Menjodohkan',
+                'true_false': 'Benar-Salah',
+                'short_answer': 'Isian Singkat',
+                'essay': 'Esai'
+            };
+            return labels[type] || type;
+        }
+
+        function generateOptionsForQuestionType(type) {
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            switch(type) {
+                case 'multiple_choice':
+                case 'complex_multiple_choice':
+                    container.innerHTML = `
+                        <h4 class="text-lg font-semibold mb-4">Pilihan Jawaban</h4>
+                        ${[1,2,3,4].map(i => `
+                            <div class="mb-4 p-4 border border-gray-200 rounded-lg">
+                                <div class="flex items-center mb-2">
+                                    <input type="radio" name="correctAnswer" value="${i-1}" class="mr-2">
+                                    <label class="font-medium">Opsi ${i} (Centang jika benar)</label>
+                                </div>
+                                <input type="text" id="option${i}Text" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 arabic-text" placeholder="Teks pilihan ${i}">
+                                <input type="url" id="option${i}Image" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="URL gambar pilihan ${i} (opsional)">
+                            </div>
+                        `).join('')}
+                    `;
+                    break;
+
+                case 'matching':
+                    container.innerHTML = `
+                        <h4 class="text-lg font-semibold mb-4">Pasangan Menjodohkan</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h5 class="font-medium mb-2">Kolom A</h5>
+                                ${[1,2,3,4].map(i => `
+                                    <input type="text" id="matchA${i}" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 arabic-text" placeholder="Item A${i}">
+                                `).join('')}
+                            </div>
+                            <div>
+                                <h5 class="font-medium mb-2">Kolom B</h5>
+                                ${[1,2,3,4].map(i => `
+                                    <input type="text" id="matchB${i}" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 arabic-text" placeholder="Item B${i}">
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Kunci Jawaban (A1-B?, A2-B?, dst)</label>
+                            <input type="text" id="matchingAnswer" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Contoh: 1-2,2-1,3-4,4-3">
+                        </div>
+                    `;
+                    break;
+
+                case 'true_false':
+                    container.innerHTML = `
+                        <h4 class="text-lg font-semibold mb-4">Jawaban Benar/Salah</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="trueFalseAnswer" value="true" class="mr-2">
+                                <span>Benar</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="trueFalseAnswer" value="false" class="mr-2">
+                                <span>Salah</span>
+                            </label>
+                        </div>
+                    `;
+                    break;
+
+                case 'short_answer':
+                    container.innerHTML = `
+                        <h4 class="text-lg font-semibold mb-4">Kunci Jawaban</h4>
+                        <input type="text" id="shortAnswer" class="w-full px-3 py-2 border border-gray-300 rounded-md arabic-text" placeholder="Jawaban yang benar">
+                        <p class="text-sm text-gray-600 mt-2">Untuk multiple jawaban, pisahkan dengan koma</p>
+                    `;
+                    break;
+
+                case 'essay':
+                    container.innerHTML = `
+                        <h4 class="text-lg font-semibold mb-4">Panduan Penilaian</h4>
+                        <textarea id="essayGuideline" class="w-full px-3 py-2 border border-gray-300 rounded-md arabic-text" rows="4" placeholder="Panduan atau rubrik penilaian untuk esai"></textarea>
+                        <div class="mt-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Skor Maksimal</label>
+                            <input type="number" id="essayMaxScore" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="100" min="1">
+                        </div>
+                    `;
+                    break;
+            }
+
+            // Add explanation field for all types
+            if (type) {
+                container.innerHTML += `
+                    <div class="mt-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Penjelasan (Opsional)</label>
+                        <textarea id="questionExplanation" class="w-full px-3 py-2 border border-gray-300 rounded-md arabic-text" rows="2" placeholder="Penjelasan jawaban untuk peserta"></textarea>
+                    </div>
+                `;
+            }
+        }
+
+        async function saveQuestion(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const isEditing = form.dataset.editingId;
+            
+            const questionData = {
+                type: document.getElementById('questionType').value,
+                category: document.getElementById('questionCategory').value,
+                question: document.getElementById('questionText').value,
+                questionImage: document.getElementById('questionImage').value,
+                explanation: document.getElementById('questionExplanation')?.value || '',
+                createdBy: currentUser.uid
+            };
+
+            // Validate required fields
+            if (!questionData.type || !questionData.question) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Data Tidak Lengkap',
+                    text: 'Tipe soal dan pertanyaan harus diisi'
+                });
+                return;
+            }
+
+            // Collect answers based on question type
+            switch(questionData.type) {
+                case 'multiple_choice':
+                case 'complex_multiple_choice':
+                    questionData.options = {};
+                    for(let i = 1; i <= 4; i++) {
+                        const text = document.getElementById(`option${i}Text`)?.value || '';
+                        const image = document.getElementById(`option${i}Image`)?.value || '';
+                        if(text) {
+                            questionData.options[i-1] = {text, image};
+                        }
+                    }
+                    const correctAnswerRadio = document.querySelector('input[name="correctAnswer"]:checked');
+                    questionData.correctAnswer = correctAnswerRadio ? parseInt(correctAnswerRadio.value) : 0;
+                    break;
+
+                case 'true_false':
+                    const trueFalseRadio = document.querySelector('input[name="trueFalseAnswer"]:checked');
+                    questionData.correctAnswer = trueFalseRadio ? trueFalseRadio.value === 'true' : true;
+                    break;
+
+                case 'short_answer':
+                    questionData.correctAnswer = document.getElementById('shortAnswer')?.value || '';
+                    break;
+
+                case 'essay':
+                    questionData.guideline = document.getElementById('essayGuideline')?.value || '';
+                    questionData.maxScore = parseInt(document.getElementById('essayMaxScore')?.value || 100);
+                    break;
+
+                case 'matching':
+                    questionData.columnA = {};
+                    questionData.columnB = {};
+                    for(let i = 1; i <= 4; i++) {
+                        const a = document.getElementById(`matchA${i}`)?.value || '';
+                        const b = document.getElementById(`matchB${i}`)?.value || '';
+                        if(a) questionData.columnA[i-1] = a;
+                        if(b) questionData.columnB[i-1] = b;
+                    }
+                    questionData.correctAnswer = document.getElementById('matchingAnswer')?.value || '';
+                    break;
+            }
+
+            try {
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo mode - just show success
+                    Swal.fire({
+                        icon: 'success',
+                        title: isEditing ? 'Soal Berhasil Diupdate!' : 'Soal Berhasil Disimpan!',
+                        text: 'Dalam mode demo, data tidak disimpan secara permanen',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else if (isFirebaseConnected) {
+                    // Real Firebase mode
+                    if (isEditing) {
+                        // Update existing question
+                        await dbRef.questions().child(isEditing).update({
+                            ...questionData,
+                            updatedAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Soal Berhasil Diupdate!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        // Create new question
+                        await dbRef.questions().push().set({
+                            ...questionData,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Soal Berhasil Disimpan!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                } else {
+                    // Firebase not connected
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Database Offline',
+                        text: 'Tidak dapat menyimpan soal saat database offline. Gunakan mode demo.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+
+                document.getElementById('questionModal').classList.add('hidden');
+                // Clear editing state
+                form.removeAttribute('data-editing-id');
+                loadQuestions();
+            } catch (error) {
+                console.error('Error saving question:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: isEditing ? 'Gagal Mengupdate Soal' : 'Gagal Menyimpan Soal',
+                    text: error.message
+                });
+            }
+        }
+
+        async function deleteQuestion(questionId) {
+            const result = await Swal.fire({
+                title: 'Hapus Soal?',
+                text: 'Soal yang dihapus tidak dapat dikembalikan!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    if (currentUser && currentUser.uid === 'demo-admin') {
+                        // Demo mode - just show success
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Soal Berhasil Dihapus!',
+                            text: 'Dalam mode demo, data tidak dihapus secara permanen',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        // Real Firebase mode
+                        await dbRef.questions().child(questionId).remove();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Soal Berhasil Dihapus!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    loadQuestions();
+                } catch (error) {
+                    console.error('Error deleting question:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menghapus Soal',
+                        text: error.message
+                    });
+                }
+            }
+        }
+
+        // Participant Management Functions
+        async function editParticipant(userId) {
+            try {
+                let userData = {};
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo data
+                    const demoUsers = {
+                        'demo-student': { name: 'Peserta Demo', email: 'peserta@email.com' },
+                        'student-2': { name: 'Ahmad Fauzi', email: 'ahmad@email.com' },
+                        'student-3': { name: 'Siti Aminah', email: 'siti@email.com' }
+                    };
+                    userData = demoUsers[userId] || {};
+                } else if (isFirebaseConnected) {
+                    const snapshot = await dbRef.users().child(userId).once('value');
+                    userData = snapshot.val() || {};
+                }
+
+                const { value: formValues } = await Swal.fire({
+                    title: 'Edit Peserta',
+                    html: `
+                        <div class="space-y-4">
+                            <input id="swal-edit-name" class="swal2-input" placeholder="Nama Lengkap" value="${userData.name || ''}" required>
+                            <input id="swal-edit-email" class="swal2-input" type="email" placeholder="Email" value="${userData.email || ''}" required>
+                            <select id="swal-edit-status" class="swal2-select">
+                                <option value="true" ${userData.isActive ? 'selected' : ''}>Aktif</option>
+                                <option value="false" ${!userData.isActive ? 'selected' : ''}>Nonaktif</option>
+                            </select>
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Update',
+                    cancelButtonText: 'Batal',
+                    preConfirm: () => {
+                        const name = document.getElementById('swal-edit-name').value;
+                        const email = document.getElementById('swal-edit-email').value;
+                        const isActive = document.getElementById('swal-edit-status').value === 'true';
+                        
+                        if (!name || !email) {
+                            Swal.showValidationMessage('Nama dan email harus diisi');
+                            return false;
+                        }
+                        
+                        return { name, email, isActive };
+                    }
+                });
+
+                if (formValues) {
+                    if (currentUser && currentUser.uid === 'demo-admin') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Peserta Berhasil Diupdate!',
+                            text: 'Dalam mode demo, perubahan tidak disimpan permanen',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } else if (isFirebaseConnected) {
+                        await dbRef.users().child(userId).update({
+                            name: formValues.name,
+                            email: formValues.email,
+                            isActive: formValues.isActive,
+                            updatedAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Peserta Berhasil Diupdate!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    loadParticipants();
+                }
+            } catch (error) {
+                console.error('Error editing participant:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Mengedit Peserta',
+                    text: error.message
+                });
+            }
+        }
+
+        async function deleteParticipant(userId) {
+            const result = await Swal.fire({
+                title: 'Hapus Peserta?',
+                text: 'Data peserta yang dihapus tidak dapat dikembalikan!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    if (currentUser && currentUser.uid === 'demo-admin') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Peserta Berhasil Dihapus!',
+                            text: 'Dalam mode demo, data tidak dihapus permanen',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } else if (isFirebaseConnected) {
+                        // Delete user data
+                        await dbRef.users().child(userId).remove();
+                        
+                        // Also delete user's results
+                        const resultsSnapshot = await dbRef.results().orderByChild('userId').equalTo(userId).once('value');
+                        const results = resultsSnapshot.val() || {};
+                        
+                        const deletePromises = Object.keys(results).map(resultId => 
+                            dbRef.results().child(resultId).remove()
+                        );
+                        
+                        await Promise.all(deletePromises);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Peserta Berhasil Dihapus!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    loadParticipants();
+                } catch (error) {
+                    console.error('Error deleting participant:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menghapus Peserta',
+                        text: error.message
+                    });
+                }
+            }
+        }
+
+        // Edit Question Function
+        async function editQuestion(questionId) {
+            try {
+                let questionData = {};
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo data
+                    const demoQuestions = {
+                        'demo-q1': {
+                            type: 'multiple_choice',
+                            category: 'Fiqh',
+                            question: 'ما هو الركن الأول من أركان الإسلام؟',
+                            options: {
+                                0: {text: 'الصلاة', image: ''},
+                                1: {text: 'الشهادة', image: ''},
+                                2: {text: 'الزكاة', image: ''},
+                                3: {text: 'الصوم', image: ''}
+                            },
+                            correctAnswer: 1,
+                            explanation: 'الشهادة هي الركن الأول من أركان الإسلام'
+                        },
+                        'demo-q2': {
+                            type: 'true_false',
+                            category: 'Akidah',
+                            question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
+                            correctAnswer: true,
+                            explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
+                        },
+                        'demo-q3': {
+                            type: 'short_answer',
+                            category: 'Akhlaq',
+                            question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
+                            correctAnswer: 'الصدق',
+                            explanation: 'الصدق من أهم الصفات الإسلامية'
+                        }
+                    };
+                    questionData = demoQuestions[questionId] || {};
+                } else if (isFirebaseConnected) {
+                    const snapshot = await dbRef.questions().child(questionId).once('value');
+                    questionData = snapshot.val() || {};
+                }
+
+                if (!questionData.type) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Soal Tidak Ditemukan',
+                        text: 'Data soal tidak dapat dimuat'
+                    });
+                    return;
+                }
+
+                // Open question modal with existing data
+                const questionModal = document.getElementById('questionModal');
+                questionModal.classList.remove('hidden');
+                
+                // Fill form with existing data
+                document.getElementById('questionType').value = questionData.type;
+                document.getElementById('questionCategory').value = questionData.category || '';
+                document.getElementById('questionText').value = questionData.question || '';
+                document.getElementById('questionImage').value = questionData.questionImage || '';
+                
+                // Generate options for the question type
+                generateOptionsForQuestionType(questionData.type);
+                
+                // Fill type-specific data
+                setTimeout(() => {
+                    switch(questionData.type) {
+                        case 'multiple_choice':
+                        case 'complex_multiple_choice':
+                            if (questionData.options) {
+                                Object.keys(questionData.options).forEach(index => {
+                                    const option = questionData.options[index];
+                                    const textInput = document.getElementById(`option${parseInt(index)+1}Text`);
+                                    const imageInput = document.getElementById(`option${parseInt(index)+1}Image`);
+                                    if (textInput) textInput.value = option.text || '';
+                                    if (imageInput) imageInput.value = option.image || '';
+                                });
+                                
+                                // Set correct answer
+                                const correctRadio = document.querySelector(`input[name="correctAnswer"][value="${questionData.correctAnswer}"]`);
+                                if (correctRadio) correctRadio.checked = true;
+                            }
+                            break;
+
+                        case 'true_false':
+                            const tfRadio = document.querySelector(`input[name="trueFalseAnswer"][value="${questionData.correctAnswer}"]`);
+                            if (tfRadio) tfRadio.checked = true;
+                            break;
+
+                        case 'short_answer':
+                            const shortInput = document.getElementById('shortAnswer');
+                            if (shortInput) shortInput.value = questionData.correctAnswer || '';
+                            break;
+
+                        case 'essay':
+                            const guidelineInput = document.getElementById('essayGuideline');
+                            const maxScoreInput = document.getElementById('essayMaxScore');
+                            if (guidelineInput) guidelineInput.value = questionData.guideline || '';
+                            if (maxScoreInput) maxScoreInput.value = questionData.maxScore || 100;
+                            break;
+
+                        case 'matching':
+                            if (questionData.columnA) {
+                                Object.keys(questionData.columnA).forEach(index => {
+                                    const input = document.getElementById(`matchA${parseInt(index)+1}`);
+                                    if (input) input.value = questionData.columnA[index];
+                                });
+                            }
+                            if (questionData.columnB) {
+                                Object.keys(questionData.columnB).forEach(index => {
+                                    const input = document.getElementById(`matchB${parseInt(index)+1}`);
+                                    if (input) input.value = questionData.columnB[index];
+                                });
+                            }
+                            const matchingInput = document.getElementById('matchingAnswer');
+                            if (matchingInput) matchingInput.value = questionData.correctAnswer || '';
+                            break;
+                    }
+                    
+                    // Fill explanation
+                    const explanationInput = document.getElementById('questionExplanation');
+                    if (explanationInput) explanationInput.value = questionData.explanation || '';
+                }, 100);
+
+                // Store the question ID for updating
+                document.getElementById('questionForm').dataset.editingId = questionId;
+                
+            } catch (error) {
+                console.error('Error loading question for edit:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Memuat Soal',
+                    text: 'Terjadi kesalahan saat memuat data soal'
+                });
+            }
+        }
+
+        // Edit Exam Function
+        async function editExam(examId) {
+            try {
+                let examData = {};
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo data
+                    const demoExams = {
+                        'demo-exam-1': {
+                            title: 'Quiz Fiqh Dasar',
+                            description: 'Ujian tentang dasar-dasar fiqh dalam Islam',
+                            duration: 30,
+                            totalQuestions: 5,
+                            passingScore: 70,
+                            isActive: true
+                        },
+                        'demo-exam-2': {
+                            title: 'Quiz Akidah Islam',
+                            description: 'Ujian tentang akidah dan keimanan dalam Islam',
+                            duration: 25,
+                            totalQuestions: 4,
+                            passingScore: 75,
+                            isActive: true
+                        },
+                        'demo-exam-3': {
+                            title: 'Quiz Sejarah Islam',
+                            description: 'Ujian tentang sejarah perkembangan Islam',
+                            duration: 40,
+                            totalQuestions: 8,
+                            passingScore: 80,
+                            isActive: false
+                        }
+                    };
+                    examData = demoExams[examId] || {};
+                } else if (isFirebaseConnected) {
+                    const snapshot = await dbRef.exams().child(examId).once('value');
+                    examData = snapshot.val() || {};
+                }
+
+                if (!examData.title) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ujian Tidak Ditemukan',
+                        text: 'Data ujian tidak dapat dimuat'
+                    });
+                    return;
+                }
+
+                const { value: formValues } = await Swal.fire({
+                    title: 'Edit Ujian',
+                    html: `
+                        <div class="space-y-4">
+                            <input id="swal-edit-title" class="swal2-input" placeholder="Judul Ujian" value="${examData.title || ''}" required>
+                            <textarea id="swal-edit-description" class="swal2-textarea" placeholder="Deskripsi Ujian">${examData.description || ''}</textarea>
+                            <input id="swal-edit-duration" class="swal2-input" type="number" placeholder="Durasi (menit)" value="${examData.duration || ''}" min="1" required>
+                            <input id="swal-edit-questions" class="swal2-input" type="number" placeholder="Jumlah Soal" value="${examData.totalQuestions || ''}" min="1" required>
+                            <input id="swal-edit-passing" class="swal2-input" type="number" placeholder="Nilai Lulus (%)" value="${examData.passingScore || ''}" min="0" max="100" required>
+                            <select id="swal-edit-status" class="swal2-select">
+                                <option value="true" ${examData.isActive ? 'selected' : ''}>Aktif</option>
+                                <option value="false" ${!examData.isActive ? 'selected' : ''}>Nonaktif</option>
+                            </select>
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Update',
+                    cancelButtonText: 'Batal',
+                    preConfirm: () => {
+                        const title = document.getElementById('swal-edit-title').value;
+                        const description = document.getElementById('swal-edit-description').value;
+                        const duration = parseInt(document.getElementById('swal-edit-duration').value);
+                        const totalQuestions = parseInt(document.getElementById('swal-edit-questions').value);
+                        const passingScore = parseInt(document.getElementById('swal-edit-passing').value);
+                        const isActive = document.getElementById('swal-edit-status').value === 'true';
+                        
+                        if (!title || !duration || !totalQuestions || isNaN(passingScore)) {
+                            Swal.showValidationMessage('Field yang wajib harus diisi dengan benar');
+                            return false;
+                        }
+                        
+                        return { title, description, duration, totalQuestions, passingScore, isActive };
+                    }
+                });
+
+                if (formValues) {
+                    try {
+                        if (currentUser && currentUser.uid === 'demo-admin') {
+                            // Demo mode - just show success
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Ujian Berhasil Diupdate!',
+                                text: 'Dalam mode demo, perubahan tidak disimpan permanen',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        } else if (isFirebaseConnected) {
+                            // Real Firebase mode
+                            await dbRef.exams().child(examId).update({
+                                ...formValues,
+                                updatedAt: firebase.database.ServerValue.TIMESTAMP
+                            });
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Ujian Berhasil Diupdate!',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Database Offline',
+                                text: 'Tidak dapat mengupdate ujian saat database offline',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        }
+                        
+                        loadExams();
+                    } catch (error) {
+                        console.error('Error updating exam:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Mengupdate Ujian',
+                            text: error.message
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading exam for edit:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Memuat Ujian',
+                    text: 'Terjadi kesalahan saat memuat data ujian'
+                });
+            }
+        }
+
+        // Delete Exam Function
+        async function deleteExam(examId) {
+            const result = await Swal.fire({
+                title: 'Hapus Ujian?',
+                text: 'Ujian yang dihapus tidak dapat dikembalikan!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    if (currentUser && currentUser.uid === 'demo-admin') {
+                        // Demo mode - just show success
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Ujian Berhasil Dihapus!',
+                            text: 'Dalam mode demo, data tidak dihapus secara permanen',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        // Real Firebase mode
+                        await dbRef.exams().child(examId).remove();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Ujian Berhasil Dihapus!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    loadExams();
+                } catch (error) {
+                    console.error('Error deleting exam:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menghapus Ujian',
+                        text: error.message
+                    });
+                }
+            }
+        }
+
+        async function startQuiz(examId) {
+            try {
+                let currentQuizData = null;
+                
+                // Check if demo user
+                if (currentUser && currentUser.uid === 'demo-student') {
+                    // Demo quiz data
+                    const demoExams = {
+                        'demo-exam-1': {
+                            title: 'Quiz Fiqh Dasar',
+                            description: 'Ujian tentang dasar-dasar fiqh dalam Islam',
+                            duration: 30,
+                            totalQuestions: 5,
+                            passingScore: 70,
+                            isActive: true
+                        },
+                        'demo-exam-2': {
+                            title: 'Quiz Akidah Islam',
+                            description: 'Ujian tentang akidah dan keimanan dalam Islam',
+                            duration: 25,
+                            totalQuestions: 4,
+                            passingScore: 75,
+                            isActive: true
+                        }
+                    };
+                    currentQuizData = demoExams[examId];
+                } else {
+                    // Load from Firebase for real users
+                    const examSnapshot = await dbRef.exams().child(examId).once('value');
+                    currentQuizData = examSnapshot.val();
+                }
+                
+                if (!currentQuizData) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Quiz Tidak Ditemukan',
+                        text: 'Quiz yang dipilih tidak tersedia'
+                    });
+                    return;
+                }
+
+                currentQuiz = currentQuizData;
+                currentQuiz.id = examId;
+
+                const result = await Swal.fire({
+                    title: 'Mulai Quiz?',
+                    text: `Anda akan memulai ${currentQuiz.title}. Durasi: ${currentQuiz.duration} menit`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#059669',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Mulai!',
+                    cancelButtonText: 'Batal'
+                });
+
+                if (result.isConfirmed) {
+                    // Load questions
+                    if (currentUser && currentUser.uid === 'demo-student') {
+                        // Demo questions
+                        const demoQuestions = [
+                            {
+                                id: 'q1',
+                                type: 'multiple_choice',
+                                category: 'Fiqh',
+                                question: 'ما هو الركن الأول من أركان الإسلام؟',
+                                options: {
+                                    0: {text: 'الصلاة', image: ''},
+                                    1: {text: 'الشهادة', image: ''},
+                                    2: {text: 'الزكاة', image: ''},
+                                    3: {text: 'الصوم', image: ''}
+                                },
+                                correctAnswer: 1,
+                                explanation: 'الشهادة هي الركن الأول من أركان الإسلام'
+                            },
+                            {
+                                id: 'q2',
+                                type: 'true_false',
+                                category: 'Akidah',
+                                question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
+                                correctAnswer: true,
+                                explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
+                            },
+                            {
+                                id: 'q3',
+                                type: 'multiple_choice',
+                                category: 'Fiqh',
+                                question: 'كم عدد الصلوات المفروضة في اليوم والليلة؟',
+                                options: {
+                                    0: {text: 'ثلاث صلوات', image: ''},
+                                    1: {text: 'أربع صلوات', image: ''},
+                                    2: {text: 'خمس صلوات', image: ''},
+                                    3: {text: 'ست صلوات', image: ''}
+                                },
+                                correctAnswer: 2,
+                                explanation: 'الصلوات المفروضة خمس في اليوم والليلة'
+                            },
+                            {
+                                id: 'q4',
+                                type: 'short_answer',
+                                category: 'Akhlaq',
+                                question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
+                                correctAnswer: 'الصدق',
+                                explanation: 'الصدق من أهم الصفات الإسلامية'
+                            },
+                            {
+                                id: 'q5',
+                                type: 'multiple_choice',
+                                category: 'Sirah',
+                                question: 'في أي مدينة ولد النبي محمد صلى الله عليه وسلم؟',
+                                options: {
+                                    0: {text: 'المدينة المنورة', image: ''},
+                                    1: {text: 'مكة المكرمة', image: ''},
+                                    2: {text: 'الطائف', image: ''},
+                                    3: {text: 'القدس', image: ''}
+                                },
+                                correctAnswer: 1,
+                                explanation: 'النبي محمد صلى الله عليه وسلم ولد في مكة المكرمة'
+                            }
+                        ];
+                        currentQuestions = demoQuestions.slice(0, currentQuiz.totalQuestions);
+                    } else {
+                        // Load from Firebase for real users
+                        const questionsSnapshot = await dbRef.questions().once('value');
+                        const allQuestions = questionsSnapshot.val() || {};
+                        
+                        // Convert to array and shuffle
+                        currentQuestions = Object.keys(allQuestions).map(id => ({
+                            id,
+                            ...allQuestions[id]
+                        })).slice(0, currentQuiz.totalQuestions);
+                    }
+                    
+                    initializeQuiz();
+                }
+            } catch (error) {
+                console.error('Error starting quiz:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Memulai Quiz',
+                    text: 'Terjadi kesalahan saat memuat quiz'
+                });
+            }
+        }
+
+        function initializeQuiz() {
+            hideAllPanels();
+            quizInterface.classList.remove('hidden');
+            
+            currentQuestionIndex = 0;
+            quizAnswers = {};
+            timeLeft = currentQuiz.duration * 60; // Convert to seconds
+            
+            document.getElementById('quizTitle').textContent = currentQuiz.title;
+            document.getElementById('totalQuestions').textContent = currentQuestions.length;
+            
+            startTimer();
+            displayQuestion();
+            
+            // Remove existing event listeners to prevent duplicates
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitQuizBtn');
+            
+            // Clone buttons to remove all event listeners
+            const newPrevBtn = prevBtn.cloneNode(true);
+            const newNextBtn = nextBtn.cloneNode(true);
+            const newSubmitBtn = submitBtn.cloneNode(true);
+            
+            prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+            nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+            submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+            
+            // Add fresh event listeners
+            document.getElementById('prevBtn').addEventListener('click', previousQuestion);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            document.getElementById('submitQuizBtn').addEventListener('click', submitQuiz);
+        }
+
+        function startTimer() {
+            quizTimer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(quizTimer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timeLeft').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function displayQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            if (!question) return;
+
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            
+            const questionContent = document.getElementById('questionContent');
+            let html = `
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4 arabic-text">${question.question}</h3>
+                    ${question.questionImage ? `<img src="${question.questionImage}" alt="Question Image" class="max-w-full h-auto mb-4 rounded-lg" onerror="this.style.display='none';">` : ''}
+                </div>
+            `;
+
+            // Generate answer options based on question type
+            switch(question.type) {
+                case 'multiple_choice':
+                    html += '<div class="space-y-3">';
+                    Object.keys(question.options || {}).forEach(index => {
+                        const option = question.options[index];
+                        const isChecked = quizAnswers[question.id] === parseInt(index) ? 'checked' : '';
+                        html += `
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="radio" name="answer_${question.id}" value="${index}" ${isChecked} class="mr-3">
+                                <div class="flex-1">
+                                    <span class="arabic-text">${option.text}</span>
+                                    ${option.image ? `<img src="${option.image}" alt="Option Image" class="max-w-32 h-auto mt-2 rounded" onerror="this.style.display='none';">` : ''}
+                                </div>
+                            </label>
+                        `;
+                    });
+                    html += '</div>';
+                    break;
+
+                case 'true_false':
+                    const trueChecked = quizAnswers[question.id] === true ? 'checked' : '';
+                    const falseChecked = quizAnswers[question.id] === false ? 'checked' : '';
+                    html += `
+                        <div class="space-y-3">
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="radio" name="answer_${question.id}" value="true" ${trueChecked} class="mr-3">
+                                <span>Benar</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="radio" name="answer_${question.id}" value="false" ${falseChecked} class="mr-3">
+                                <span>Salah</span>
+                            </label>
+                        </div>
+                    `;
+                    break;
+
+                case 'short_answer':
+                    const shortAnswer = quizAnswers[question.id] || '';
+                    html += `
+                        <div>
+                            <input type="text" name="answer_${question.id}" value="${shortAnswer}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 arabic-text" 
+                                   placeholder="Ketik jawaban Anda di sini...">
+                        </div>
+                    `;
+                    break;
+
+                case 'essay':
+                    const essayAnswer = quizAnswers[question.id] || '';
+                    html += `
+                        <div>
+                            <textarea name="answer_${question.id}" rows="6" 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 arabic-text" 
+                                      placeholder="Tulis jawaban esai Anda di sini...">${essayAnswer}</textarea>
+                        </div>
+                    `;
+                    break;
+            }
+
+            questionContent.innerHTML = html;
+
+            // Add event listeners for answer changes
+            const answerInputs = questionContent.querySelectorAll(`[name="answer_${question.id}"]`);
+            answerInputs.forEach(input => {
+                const eventType = input.type === 'radio' ? 'change' : 'input';
+                input.addEventListener(eventType, (e) => {
+                    let value = e.target.value;
+                    if (question.type === 'multiple_choice') {
+                        value = parseInt(value);
+                    } else if (question.type === 'true_false') {
+                        value = value === 'true';
+                    }
+                    quizAnswers[question.id] = value;
+                });
+            });
+
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitQuizBtn');
+            
+            prevBtn.disabled = currentQuestionIndex === 0;
+            prevBtn.classList.toggle('opacity-50', currentQuestionIndex === 0);
+            
+            if (currentQuestionIndex === currentQuestions.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        }
+
+        async function submitQuiz() {
+            clearInterval(quizTimer);
+            
+            const result = await Swal.fire({
+                title: 'Submit Quiz?',
+                text: 'Anda yakin ingin mengakhiri quiz ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Submit!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                await calculateAndShowResults();
+            } else {
+                // Resume timer if cancelled
+                startTimer();
+            }
+        }
+
+        async function calculateAndShowResults() {
+            let correctAnswers = 0;
+            let totalQuestions = currentQuestions.length;
+
+            currentQuestions.forEach(question => {
+                const userAnswer = quizAnswers[question.id];
+                if (question.type === 'multiple_choice' || question.type === 'true_false') {
+                    if (userAnswer === question.correctAnswer) {
+                        correctAnswers++;
+                    }
+                }
+                // For other types, manual grading would be needed
+            });
+
+            const score = Math.round((correctAnswers / totalQuestions) * 100);
+            const passed = score >= currentQuiz.passingScore;
+
+            // Save result to database
+            const resultData = {
+                userId: currentUser.uid,
+                examId: currentQuiz.id,
+                score: score,
+                correctAnswers: correctAnswers,
+                totalQuestions: totalQuestions,
+                passed: passed,
+                answers: quizAnswers,
+                startedAt: Date.now() - (currentQuiz.duration * 60 - timeLeft) * 1000,
+                completedAt: Date.now()
+            };
+
+            try {
+                if (isFirebaseConnected && !currentUser.uid.startsWith('demo-')) {
+                    // Save to Firebase for real users
+                    await dbRef.results().push().set({
+                        ...resultData,
+                        completedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } else {
+                    // Demo mode or offline - just store locally
+                    const localResults = JSON.parse(localStorage.getItem('cbt_results') || '[]');
+                    localResults.push({
+                        ...resultData,
+                        id: 'result_' + Date.now()
+                    });
+                    localStorage.setItem('cbt_results', JSON.stringify(localResults));
+                }
+                
+                Swal.fire({
+                    title: passed ? 'Selamat!' : 'Belum Berhasil',
+                    html: `
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">${passed ? '🎉' : '😔'}</div>
+                            <p class="text-lg mb-2">Skor Anda: <strong>${score}%</strong></p>
+                            <p class="text-sm text-gray-600">Jawaban Benar: ${correctAnswers} dari ${totalQuestions}</p>
+                            <p class="text-sm text-gray-600">Nilai Lulus: ${currentQuiz.passingScore}%</p>
+                            ${!isFirebaseConnected ? '<p class="text-xs text-orange-600 mt-2">Hasil disimpan secara lokal (offline mode)</p>' : ''}
+                        </div>
+                    `,
+                    icon: passed ? 'success' : 'error',
+                    confirmButtonColor: '#059669',
+                    confirmButtonText: 'Kembali ke Dashboard'
+                }).then(() => {
+                    showStudentDashboard();
+                });
+            } catch (error) {
+                console.error('Error saving result:', error);
+                
+                // Fallback to local storage
+                try {
+                    const localResults = JSON.parse(localStorage.getItem('cbt_results') || '[]');
+                    localResults.push({
+                        ...resultData,
+                        id: 'result_' + Date.now()
+                    });
+                    localStorage.setItem('cbt_results', JSON.stringify(localResults));
+                    
+                    Swal.fire({
+                        title: passed ? 'Selamat!' : 'Belum Berhasil',
+                        html: `
+                            <div class="text-center">
+                                <div class="text-6xl mb-4">${passed ? '🎉' : '😔'}</div>
+                                <p class="text-lg mb-2">Skor Anda: <strong>${score}%</strong></p>
+                                <p class="text-sm text-gray-600">Jawaban Benar: ${correctAnswers} dari ${totalQuestions}</p>
+                                <p class="text-sm text-gray-600">Nilai Lulus: ${currentQuiz.passingScore}%</p>
+                                <p class="text-xs text-orange-600 mt-2">Hasil disimpan secara lokal</p>
+                            </div>
+                        `,
+                        icon: passed ? 'success' : 'error',
+                        confirmButtonColor: '#059669',
+                        confirmButtonText: 'Kembali ke Dashboard'
+                    }).then(() => {
+                        showStudentDashboard();
+                    });
+                } catch (localError) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menyimpan Hasil',
+                        text: 'Hasil quiz tidak dapat disimpan. Silakan coba lagi.'
+                    });
+                }
+            }
+        }
+
+        // Add Participant Function
+        function setupAddParticipantBtn() {
+            const addParticipantBtn = document.getElementById('addParticipantBtn');
+            if (addParticipantBtn) {
+                addParticipantBtn.addEventListener('click', async () => {
+                    const { value: formValues } = await Swal.fire({
+                        title: 'Tambah Peserta Baru',
+                        html: `
+                            <div class="space-y-4">
+                                <input id="swal-name" class="swal2-input" placeholder="Nama Lengkap" required>
+                                <input id="swal-email" class="swal2-input" type="email" placeholder="Email" required>
+                                <input id="swal-password" class="swal2-input" type="password" placeholder="Password" required>
+                            </div>
+                        `,
+                        focusConfirm: false,
+                        showCancelButton: true,
+                        confirmButtonText: 'Tambah',
+                        cancelButtonText: 'Batal',
+                        preConfirm: () => {
+                            const name = document.getElementById('swal-name').value;
+                            const email = document.getElementById('swal-email').value;
+                            const password = document.getElementById('swal-password').value;
+                            
+                            if (!name || !email || !password) {
+                                Swal.showValidationMessage('Semua field harus diisi');
+                                return false;
+                            }
+                            
+                            return { name, email, password };
+                        }
+                    });
+
+                    if (formValues) {
+                        try {
+                            if (currentUser && currentUser.uid === 'demo-admin') {
+                                // Demo mode - just show success
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Peserta Berhasil Ditambahkan!',
+                                    text: 'Dalam mode demo, data tidak disimpan secara permanen',
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                                loadParticipants();
+                            } else if (isFirebaseConnected) {
+                                // Real Firebase mode
+                                try {
+                                    const userCredential = await auth.createUserWithEmailAndPassword(formValues.email, formValues.password);
+                                    const user = userCredential.user;
+                                    
+                                    await dbRef.users().child(user.uid).set({
+                                        name: formValues.name,
+                                        email: formValues.email,
+                                        role: 'student',
+                                        isActive: true,
+                                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                                    });
+                                    
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Peserta Berhasil Ditambahkan!',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                    
+                                    loadParticipants();
+                                } catch (authError) {
+                                    console.error('Auth error:', authError);
+                                    throw authError;
+                                }
+                            } else {
+                                // Firebase not connected
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Database Offline',
+                                    text: 'Tidak dapat menambah peserta saat database offline. Gunakan mode demo.',
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error adding participant:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal Menambah Peserta',
+                                text: error.message
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        // Add Exam Function
+        function setupAddExamBtn() {
+            const addExamBtn = document.getElementById('addExamBtn');
+            if (addExamBtn) {
+                addExamBtn.addEventListener('click', async () => {
+                    const { value: formValues } = await Swal.fire({
+                        title: 'Buat Ujian Baru',
+                        html: `
+                            <div class="space-y-4">
+                                <input id="swal-title" class="swal2-input" placeholder="Judul Ujian" required>
+                                <textarea id="swal-description" class="swal2-textarea" placeholder="Deskripsi Ujian"></textarea>
+                                <input id="swal-duration" class="swal2-input" type="number" placeholder="Durasi (menit)" min="1" required>
+                                <input id="swal-questions" class="swal2-input" type="number" placeholder="Jumlah Soal" min="1" required>
+                                <input id="swal-passing" class="swal2-input" type="number" placeholder="Nilai Lulus (%)" min="0" max="100" required>
+                            </div>
+                        `,
+                        focusConfirm: false,
+                        showCancelButton: true,
+                        confirmButtonText: 'Buat',
+                        cancelButtonText: 'Batal',
+                        preConfirm: () => {
+                            const title = document.getElementById('swal-title').value;
+                            const description = document.getElementById('swal-description').value;
+                            const duration = parseInt(document.getElementById('swal-duration').value);
+                            const totalQuestions = parseInt(document.getElementById('swal-questions').value);
+                            const passingScore = parseInt(document.getElementById('swal-passing').value);
+                            
+                            if (!title || !duration || !totalQuestions || !passingScore) {
+                                Swal.showValidationMessage('Field yang wajib harus diisi');
+                                return false;
+                            }
+                            
+                            return { title, description, duration, totalQuestions, passingScore };
+                        }
+                    });
+
+                    if (formValues) {
+                        try {
+                            if (currentUser && currentUser.uid === 'demo-admin') {
+                                // Demo mode - just show success
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Ujian Berhasil Dibuat!',
+                                    text: 'Dalam mode demo, data tidak disimpan secara permanen',
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                                loadExams();
+                            } else if (isFirebaseConnected) {
+                                // Real Firebase mode
+                                await dbRef.exams().push().set({
+                                    ...formValues,
+                                    isActive: true,
+                                    createdBy: currentUser.uid,
+                                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                                });
+                                
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Ujian Berhasil Dibuat!',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                
+                                loadExams();
+                            } else {
+                                // Firebase not connected
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Database Offline',
+                                    text: 'Tidak dapat membuat ujian saat database offline. Gunakan mode demo.',
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error creating exam:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal Membuat Ujian',
+                                text: error.message
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize sample data if needed
+        async function initializeSampleData() {
+            try {
+                // Check if admin user exists
+                const usersSnapshot = await dbRef.users().once('value');
+                const users = usersSnapshot.val() || {};
+                
+                const hasAdmin = Object.values(users).some(user => user.role === 'admin');
+                
+                if (!hasAdmin) {
+                    console.log('Creating sample admin user...');
+                    // Create admin user
+                    const adminCredential = await auth.createUserWithEmailAndPassword('admin@quiz.com', 'admin123');
+                    await dbRef.users().child(adminCredential.user.uid).set({
+                        name: 'Administrator',
+                        email: 'admin@quiz.com',
+                        role: 'admin',
+                        isActive: true,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    // Create sample student
+                    const studentCredential = await auth.createUserWithEmailAndPassword('peserta@email.com', 'password123');
+                    await dbRef.users().child(studentCredential.user.uid).set({
+                        name: 'Peserta Demo',
+                        email: 'peserta@email.com',
+                        role: 'student',
+                        isActive: true,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    // Create sample exam
+                    const examRef = await dbRef.exams().push();
+                    await examRef.set({
+                        title: 'Quiz Fiqh Dasar',
+                        description: 'Ujian tentang dasar-dasar fiqh dalam Islam',
+                        duration: 30,
+                        totalQuestions: 5,
+                        passingScore: 70,
+                        isActive: true,
+                        createdBy: adminCredential.user.uid,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    // Create sample questions
+                    const questions = [
+                        {
+                            type: 'multiple_choice',
+                            category: 'Fiqh',
+                            question: 'ما هو الركن الأول من أركان الإسلام؟',
+                            options: {
+                                0: {text: 'الصلاة', image: ''},
+                                1: {text: 'الشهادة', image: ''},
+                                2: {text: 'الزكاة', image: ''},
+                                3: {text: 'الصوم', image: ''}
+                            },
+                            correctAnswer: 1,
+                            explanation: 'الشهادة هي الركن الأول من أركان الإسلام'
+                        },
+                        {
+                            type: 'true_false',
+                            category: 'Akidah',
+                            question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
+                            correctAnswer: true,
+                            explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
+                        },
+                        {
+                            type: 'multiple_choice',
+                            category: 'Fiqh',
+                            question: 'كم عدد الصلوات المفروضة في اليوم والليلة؟',
+                            options: {
+                                0: {text: 'ثلاث صلوات', image: ''},
+                                1: {text: 'أربع صلوات', image: ''},
+                                2: {text: 'خمس صلوات', image: ''},
+                                3: {text: 'ست صلوات', image: ''}
+                            },
+                            correctAnswer: 2,
+                            explanation: 'الصلوات المفروضة خمس في اليوم والليلة'
+                        },
+                        {
+                            type: 'short_answer',
+                            category: 'Akhlaq',
+                            question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
+                            correctAnswer: 'الصدق,الأمانة,التقوى',
+                            explanation: 'الصدق والأمانة والتقوى من أهم الصفات الإسلامية'
+                        },
+                        {
+                            type: 'essay',
+                            category: 'Sirah',
+                            question: 'اكتب فقرة قصيرة عن أهمية الصلاة في حياة المسلم',
+                            guideline: 'يجب أن تتضمن الإجابة: أهمية الصلاة، فوائدها الروحية، وأثرها على السلوك',
+                            maxScore: 100,
+                            explanation: 'الصلاة عماد الدين وصلة بين العبد وربه'
+                        }
+                    ];
+                    
+                    for (const question of questions) {
+                        await dbRef.questions().push().set({
+                            ...question,
+                            createdBy: adminCredential.user.uid,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
+                    
+                    console.log('✅ Sample data created successfully!');
+                    
+                    // Sign out after creating sample data
+                    await auth.signOut();
+                }
+            } catch (error) {
+                console.error('Error initializing sample data:', error);
+            }
+        }
+
+        // Excel Import/Export Functions
+        function downloadParticipantTemplate() {
+            const templateData = [
+                {
+                    'Nama Lengkap': 'Ahmad Fauzi',
+                    'Email': 'ahmad@email.com',
+                    'Password': 'password123',
+                    'Status': 'Aktif'
+                },
+                {
+                    'Nama Lengkap': 'Siti Aminah',
+                    'Email': 'siti@email.com',
+                    'Password': 'password123',
+                    'Status': 'Aktif'
+                },
+                {
+                    'Nama Lengkap': 'Muhammad Rizki',
+                    'Email': 'rizki@email.com',
+                    'Password': 'password123',
+                    'Status': 'Nonaktif'
+                }
+            ];
+
+            const worksheet = XLSX.utils.json_to_sheet(templateData);
+            const workbook = XLSX.utils.book_new();
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { width: 20 }, // Nama Lengkap
+                { width: 25 }, // Email
+                { width: 15 }, // Password
+                { width: 10 }  // Status
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Peserta');
+            XLSX.writeFile(workbook, 'Template_Import_Peserta.xlsx');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Template Berhasil Diunduh!',
+                text: 'File template telah disimpan ke folder Download',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        function downloadQuestionTemplate() {
+            const templateData = [
+                {
+                    'Tipe Soal': 'multiple_choice',
+                    'Kategori': 'Fiqh',
+                    'Pertanyaan': 'ما هو الركن الأول من أركان الإسلام؟',
+                    'Gambar Pertanyaan': '',
+                    'Opsi A': 'الصلاة',
+                    'Gambar A': '',
+                    'Opsi B': 'الشهادة',
+                    'Gambar B': '',
+                    'Opsi C': 'الزكاة',
+                    'Gambar C': '',
+                    'Opsi D': 'الصوم',
+                    'Gambar D': '',
+                    'Jawaban Benar': 'B',
+                    'Penjelasan': 'الشهادة هي الركن الأول من أركان الإسلام'
+                },
+                {
+                    'Tipe Soal': 'true_false',
+                    'Kategori': 'Akidah',
+                    'Pertanyaan': 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
+                    'Gambar Pertanyaan': '',
+                    'Opsi A': '',
+                    'Gambar A': '',
+                    'Opsi B': '',
+                    'Gambar B': '',
+                    'Opsi C': '',
+                    'Gambar C': '',
+                    'Opsi D': '',
+                    'Gambar D': '',
+                    'Jawaban Benar': 'Benar',
+                    'Penjelasan': 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
+                },
+                {
+                    'Tipe Soal': 'short_answer',
+                    'Kategori': 'Akhlaq',
+                    'Pertanyaan': 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
+                    'Gambar Pertanyaan': '',
+                    'Opsi A': '',
+                    'Gambar A': '',
+                    'Opsi B': '',
+                    'Gambar B': '',
+                    'Opsi C': '',
+                    'Gambar C': '',
+                    'Opsi D': '',
+                    'Gambar D': '',
+                    'Jawaban Benar': 'الصدق',
+                    'Penjelasan': 'الصدق من أهم الصفات الإسلامية'
+                },
+                {
+                    'Tipe Soal': 'essay',
+                    'Kategori': 'Sirah',
+                    'Pertanyaan': 'اكتب فقرة قصيرة عن أهمية الصلاة في حياة المسلم',
+                    'Gambar Pertanyaan': '',
+                    'Opsi A': '',
+                    'Gambar A': '',
+                    'Opsi B': '',
+                    'Gambar B': '',
+                    'Opsi C': '',
+                    'Gambar C': '',
+                    'Opsi D': '',
+                    'Gambar D': '',
+                    'Jawaban Benar': 'Panduan: يجب أن تتضمن الإجابة أهمية الصلاة وفوائدها الروحية',
+                    'Penjelasan': 'الصلاة عماد الدين وصلة بين العبد وربه'
+                }
+            ];
+
+            const worksheet = XLSX.utils.json_to_sheet(templateData);
+            const workbook = XLSX.utils.book_new();
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { width: 15 }, // Tipe Soal
+                { width: 12 }, // Kategori
+                { width: 40 }, // Pertanyaan
+                { width: 20 }, // Gambar Pertanyaan
+                { width: 20 }, // Opsi A
+                { width: 15 }, // Gambar A
+                { width: 20 }, // Opsi B
+                { width: 15 }, // Gambar B
+                { width: 20 }, // Opsi C
+                { width: 15 }, // Gambar C
+                { width: 20 }, // Opsi D
+                { width: 15 }, // Gambar D
+                { width: 15 }, // Jawaban Benar
+                { width: 30 }  // Penjelasan
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Soal');
+            
+            // Add instruction sheet
+            const instructions = [
+                { 'Kolom': 'Tipe Soal', 'Keterangan': 'multiple_choice, true_false, short_answer, essay, matching, complex_multiple_choice' },
+                { 'Kolom': 'Kategori', 'Keterangan': 'Fiqh, Akidah, Akhlaq, Sirah, dll' },
+                { 'Kolom': 'Pertanyaan', 'Keterangan': 'Teks pertanyaan (bisa bahasa Arab)' },
+                { 'Kolom': 'Gambar Pertanyaan', 'Keterangan': 'URL gambar untuk pertanyaan (opsional)' },
+                { 'Kolom': 'Opsi A-D', 'Keterangan': 'Pilihan jawaban (untuk multiple_choice)' },
+                { 'Kolom': 'Gambar A-D', 'Keterangan': 'URL gambar untuk opsi (opsional)' },
+                { 'Kolom': 'Jawaban Benar', 'Keterangan': 'A/B/C/D (multiple_choice), Benar/Salah (true_false), teks jawaban (short_answer), panduan (essay)' },
+                { 'Kolom': 'Penjelasan', 'Keterangan': 'Penjelasan jawaban untuk peserta' }
+            ];
+            
+            const instructionSheet = XLSX.utils.json_to_sheet(instructions);
+            instructionSheet['!cols'] = [{ width: 20 }, { width: 60 }];
+            XLSX.utils.book_append_sheet(workbook, instructionSheet, 'Petunjuk');
+            
+            XLSX.writeFile(workbook, 'Template_Import_Soal.xlsx');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Template Berhasil Diunduh!',
+                text: 'File template telah disimpan ke folder Download',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        async function importParticipants(file) {
+            try {
+                const data = await readExcelFile(file);
+                const participants = [];
+                
+                // Validate and process data
+                for (let i = 0; i < data.length; i++) {
+                    const row = data[i];
+                    
+                    if (!row['Nama Lengkap'] || !row['Email'] || !row['Password']) {
+                        throw new Error(`Baris ${i + 2}: Data tidak lengkap (Nama, Email, Password wajib diisi)`);
+                    }
+                    
+                    if (!isValidEmail(row['Email'])) {
+                        throw new Error(`Baris ${i + 2}: Format email tidak valid`);
+                    }
+                    
+                    participants.push({
+                        name: row['Nama Lengkap'].toString().trim(),
+                        email: row['Email'].toString().trim().toLowerCase(),
+                        password: row['Password'].toString().trim(),
+                        isActive: row['Status'] ? row['Status'].toString().toLowerCase() === 'aktif' : true
+                    });
+                }
+                
+                if (participants.length === 0) {
+                    throw new Error('Tidak ada data valid untuk diimport');
+                }
+                
+                // Show confirmation
+                const result = await Swal.fire({
+                    title: 'Konfirmasi Import',
+                    html: `
+                        <div class="text-left">
+                            <p class="mb-2">Data yang akan diimport:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-600 mb-4">
+                                <li><strong>${participants.length}</strong> peserta</li>
+                                <li>Data yang sudah ada akan diupdate jika email sama</li>
+                            </ul>
+                            <p class="text-sm text-red-600">⚠️ Proses ini tidak dapat dibatalkan!</p>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#059669',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Import!',
+                    cancelButtonText: 'Batal'
+                });
+                
+                if (!result.isConfirmed) return;
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Mengimport Data...',
+                    html: 'Mohon tunggu, sedang memproses data peserta',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                let successCount = 0;
+                let errorCount = 0;
+                const errors = [];
+                
+                // Process each participant
+                for (let i = 0; i < participants.length; i++) {
+                    const participant = participants[i];
+                    
+                    try {
+                        if (currentUser && currentUser.uid === 'demo-admin') {
+                            // Demo mode - just count as success
+                            successCount++;
+                        } else if (isFirebaseConnected) {
+                            // Real Firebase mode
+                            try {
+                                // Check if user already exists
+                                const existingUsers = await dbRef.users().orderByChild('email').equalTo(participant.email).once('value');
+                                const existing = existingUsers.val();
+                                
+                                if (existing) {
+                                    // Update existing user
+                                    const userId = Object.keys(existing)[0];
+                                    await dbRef.users().child(userId).update({
+                                        name: participant.name,
+                                        isActive: participant.isActive,
+                                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                                    });
+                                    successCount++;
+                                } else {
+                                    // Create new user
+                                    const userCredential = await auth.createUserWithEmailAndPassword(participant.email, participant.password);
+                                    await dbRef.users().child(userCredential.user.uid).set({
+                                        name: participant.name,
+                                        email: participant.email,
+                                        role: 'student',
+                                        isActive: participant.isActive,
+                                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                                    });
+                                    successCount++;
+                                }
+                            } catch (authError) {
+                                if (authError.code === 'auth/email-already-in-use') {
+                                    // Try to update existing user data
+                                    const existingUsers = await dbRef.users().orderByChild('email').equalTo(participant.email).once('value');
+                                    const existing = existingUsers.val();
+                                    
+                                    if (existing) {
+                                        const userId = Object.keys(existing)[0];
+                                        await dbRef.users().child(userId).update({
+                                            name: participant.name,
+                                            isActive: participant.isActive,
+                                            updatedAt: firebase.database.ServerValue.TIMESTAMP
+                                        });
+                                        successCount++;
+                                    } else {
+                                        throw authError;
+                                    }
+                                } else {
+                                    throw authError;
+                                }
+                            }
+                        } else {
+                            // Firebase not connected
+                            throw new Error('Database offline');
+                        }
+                    } catch (error) {
+                        errorCount++;
+                        errors.push(`${participant.name} (${participant.email}): ${error.message}`);
+                    }
+                }
+                
+                Swal.close();
+                
+                // Show results
+                if (successCount > 0) {
+                    let message = `✅ ${successCount} peserta berhasil diimport`;
+                    if (errorCount > 0) {
+                        message += `\n❌ ${errorCount} peserta gagal diimport`;
+                        if (errors.length > 0) {
+                            message += `\n\nError:\n${errors.slice(0, 5).join('\n')}`;
+                            if (errors.length > 5) {
+                                message += `\n... dan ${errors.length - 5} error lainnya`;
+                            }
+                        }
+                    }
+                    
+                    Swal.fire({
+                        icon: successCount > errorCount ? 'success' : 'warning',
+                        title: 'Import Selesai',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                    
+                    loadParticipants();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Import Gagal',
+                        text: `Semua data gagal diimport:\n${errors.slice(0, 3).join('\n')}`
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Import Gagal',
+                    text: error.message
+                });
+            }
+        }
+
+        async function importQuestions(file) {
+            try {
+                const data = await readExcelFile(file);
+                const questions = [];
+                
+                // Validate and process data
+                for (let i = 0; i < data.length; i++) {
+                    const row = data[i];
+                    
+                    if (!row['Tipe Soal'] || !row['Pertanyaan']) {
+                        throw new Error(`Baris ${i + 2}: Tipe Soal dan Pertanyaan wajib diisi`);
+                    }
+                    
+                    const questionType = row['Tipe Soal'].toString().toLowerCase().trim();
+                    const validTypes = ['multiple_choice', 'true_false', 'short_answer', 'essay', 'matching', 'complex_multiple_choice'];
+                    
+                    if (!validTypes.includes(questionType)) {
+                        throw new Error(`Baris ${i + 2}: Tipe soal tidak valid. Gunakan: ${validTypes.join(', ')}`);
+                    }
+                    
+                    const questionData = {
+                        type: questionType,
+                        category: row['Kategori'] ? row['Kategori'].toString().trim() : 'Umum',
+                        question: row['Pertanyaan'].toString().trim(),
+                        questionImage: row['Gambar Pertanyaan'] ? row['Gambar Pertanyaan'].toString().trim() : '',
+                        explanation: row['Penjelasan'] ? row['Penjelasan'].toString().trim() : '',
+                        createdBy: currentUser.uid
+                    };
+                    
+                    // Process based on question type
+                    switch (questionType) {
+                        case 'multiple_choice':
+                        case 'complex_multiple_choice':
+                            if (!row['Opsi A'] || !row['Opsi B'] || !row['Jawaban Benar']) {
+                                throw new Error(`Baris ${i + 2}: Opsi A, B dan Jawaban Benar wajib diisi untuk pilihan ganda`);
+                            }
+                            
+                            questionData.options = {};
+                            ['A', 'B', 'C', 'D'].forEach((letter, index) => {
+                                const optionText = row[`Opsi ${letter}`];
+                                if (optionText) {
+                                    questionData.options[index] = {
+                                        text: optionText.toString().trim(),
+                                        image: row[`Gambar ${letter}`] ? row[`Gambar ${letter}`].toString().trim() : ''
+                                    };
+                                }
+                            });
+                            
+                            const correctLetter = row['Jawaban Benar'].toString().toUpperCase().trim();
+                            const letterToIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+                            questionData.correctAnswer = letterToIndex[correctLetter] !== undefined ? letterToIndex[correctLetter] : 0;
+                            break;
+                            
+                        case 'true_false':
+                            const tfAnswer = row['Jawaban Benar'].toString().toLowerCase().trim();
+                            questionData.correctAnswer = tfAnswer === 'benar' || tfAnswer === 'true' || tfAnswer === '1';
+                            break;
+                            
+                        case 'short_answer':
+                            questionData.correctAnswer = row['Jawaban Benar'] ? row['Jawaban Benar'].toString().trim() : '';
+                            break;
+                            
+                        case 'essay':
+                            questionData.guideline = row['Jawaban Benar'] ? row['Jawaban Benar'].toString().trim() : '';
+                            questionData.maxScore = 100;
+                            break;
+                    }
+                    
+                    questions.push(questionData);
+                }
+                
+                if (questions.length === 0) {
+                    throw new Error('Tidak ada data valid untuk diimport');
+                }
+                
+                // Show confirmation
+                const result = await Swal.fire({
+                    title: 'Konfirmasi Import',
+                    html: `
+                        <div class="text-left">
+                            <p class="mb-2">Data yang akan diimport:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-600 mb-4">
+                                <li><strong>${questions.length}</strong> soal</li>
+                                <li>Tipe: ${[...new Set(questions.map(q => q.type))].join(', ')}</li>
+                            </ul>
+                            <p class="text-sm text-red-600">⚠️ Proses ini tidak dapat dibatalkan!</p>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#059669',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Import!',
+                    cancelButtonText: 'Batal'
+                });
+                
+                if (!result.isConfirmed) return;
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Mengimport Soal...',
+                    html: 'Mohon tunggu, sedang memproses soal',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                let successCount = 0;
+                let errorCount = 0;
+                
+                // Process each question
+                for (const question of questions) {
+                    try {
+                        if (currentUser && currentUser.uid === 'demo-admin') {
+                            // Demo mode - just count as success
+                            successCount++;
+                        } else if (isFirebaseConnected) {
+                            // Real Firebase mode
+                            await dbRef.questions().push().set({
+                                ...question,
+                                createdAt: firebase.database.ServerValue.TIMESTAMP
+                            });
+                            successCount++;
+                        } else {
+                            // Firebase not connected
+                            throw new Error('Database offline');
+                        }
+                    } catch (error) {
+                        errorCount++;
+                        console.error('Error importing question:', error);
+                    }
+                }
+                
+                Swal.close();
+                
+                // Show results
+                Swal.fire({
+                    icon: successCount > 0 ? 'success' : 'error',
+                    title: 'Import Selesai',
+                    text: `✅ ${successCount} soal berhasil diimport${errorCount > 0 ? `\n❌ ${errorCount} soal gagal diimport` : ''}`,
+                    confirmButtonText: 'OK'
+                });
+                
+                if (successCount > 0) {
+                    loadQuestions();
+                }
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Import Gagal',
+                    text: error.message
+                });
+            }
+        }
+
+        function readExcelFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        resolve(jsonData);
+                    } catch (error) {
+                        reject(new Error('File Excel tidak valid atau rusak'));
+                    }
+                };
+                reader.onerror = () => reject(new Error('Gagal membaca file'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Setup Import Modal
+        function setupImportModal() {
+            const importModal = document.getElementById('importModal');
+            const closeImportModal = document.getElementById('closeImportModal');
+            const importFileInput = document.getElementById('importFileInput');
+            const processImportBtn = document.getElementById('processImportBtn');
+            
+            let currentImportType = '';
+            
+            // Close modal handlers
+            if (closeImportModal) {
+                closeImportModal.addEventListener('click', () => {
+                    importModal.classList.add('hidden');
+                    importFileInput.value = '';
+                    processImportBtn.disabled = true;
+                });
+            }
+            
+            // Close modal when clicking outside
+            if (importModal) {
+                importModal.addEventListener('click', (e) => {
+                    if (e.target === importModal) {
+                        importModal.classList.add('hidden');
+                        importFileInput.value = '';
+                        processImportBtn.disabled = true;
+                    }
+                });
+            }
+            
+            // File input change handler
+            if (importFileInput) {
+                importFileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Validate file size (5MB max)
+                        if (file.size > 5 * 1024 * 1024) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'File Terlalu Besar',
+                                text: 'Ukuran file maksimal 5MB'
+                            });
+                            e.target.value = '';
+                            processImportBtn.disabled = true;
+                            return;
+                        }
+                        
+                        // Validate file type
+                        const validTypes = ['.xlsx', '.xls'];
+                        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                        if (!validTypes.includes(fileExtension)) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Format File Tidak Valid',
+                                text: 'Hanya file Excel (.xlsx, .xls) yang diperbolehkan'
+                            });
+                            e.target.value = '';
+                            processImportBtn.disabled = true;
+                            return;
+                        }
+                        
+                        processImportBtn.disabled = false;
+                    } else {
+                        processImportBtn.disabled = true;
+                    }
+                });
+            }
+            
+            // Process import button handler
+            if (processImportBtn) {
+                processImportBtn.addEventListener('click', async () => {
+                    const file = importFileInput.files[0];
+                    if (!file) return;
+                    
+                    importModal.classList.add('hidden');
+                    
+                    if (currentImportType === 'participants') {
+                        await importParticipants(file);
+                    } else if (currentImportType === 'questions') {
+                        await importQuestions(file);
+                    }
+                    
+                    // Reset form
+                    importFileInput.value = '';
+                    processImportBtn.disabled = true;
+                });
+            }
+            
+            // Setup import buttons
+            const downloadParticipantTemplateBtn = document.getElementById('downloadParticipantTemplateBtn');
+            const importParticipantsBtn = document.getElementById('importParticipantsBtn');
+            const downloadQuestionTemplateBtn = document.getElementById('downloadQuestionTemplateBtn');
+            const importQuestionsBtn = document.getElementById('importQuestionsBtn');
+            
+            if (downloadParticipantTemplateBtn) {
+                downloadParticipantTemplateBtn.addEventListener('click', downloadParticipantTemplate);
+            }
+            
+            if (importParticipantsBtn) {
+                importParticipantsBtn.addEventListener('click', () => {
+                    currentImportType = 'participants';
+                    document.getElementById('importModalTitle').textContent = 'Import Data Peserta';
+                    document.getElementById('importModalDescription').textContent = 'Pilih file Excel berisi data peserta';
+                    importModal.classList.remove('hidden');
+                });
+            }
+            
+            if (downloadQuestionTemplateBtn) {
+                downloadQuestionTemplateBtn.addEventListener('click', downloadQuestionTemplate);
+            }
+            
+            if (importQuestionsBtn) {
+                importQuestionsBtn.addEventListener('click', () => {
+                    currentImportType = 'questions';
+                    document.getElementById('importModalTitle').textContent = 'Import Bank Soal';
+                    document.getElementById('importModalDescription').textContent = 'Pilih file Excel berisi soal-soal';
+                    importModal.classList.remove('hidden');
+                });
+            }
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show welcome page by default
+            hideAllPanels();
+            document.getElementById('welcomePage').classList.remove('hidden');
+            
+            // Initialize sample data
+            setTimeout(() => {
+                initializeSampleData();
+            }, 2000);
+            
+            // Listen for auth state changes
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    console.log('User logged in:', user.email);
+                } else {
+                    currentUser = null;
+                    console.log('User logged out');
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98080034f7ccfdea',t:'MTc1ODEwNTc4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
