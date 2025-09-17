@@ -506,6 +506,83 @@
                 confirmButtonText: 'OK, Saya Mengerti'
             });
         }
+// === Import Excel Siswa ===
+let dataExcel = [];
+
+// 🔹 Baca file Excel
+document.getElementById("importFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const data = new Uint8Array(event.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    dataExcel = XLSX.utils.sheet_to_json(sheet); // Array of objects
+    console.log("📥 Data Excel:", dataExcel);
+    Swal.fire("Berhasil", "File Excel sudah dibaca, siap diimport!", "success");
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+// 🔹 Proses Import ke Firebase
+document.getElementById("processImportBtn").addEventListener("click", async () => {
+  if (dataExcel.length === 0) {
+    Swal.fire("Oops", "Belum ada file Excel yang dipilih.", "warning");
+    return;
+  }
+
+  try {
+    for (const siswa of dataExcel) {
+      const nama = siswa["Nama Lengkap"];
+      const email = siswa["Email"];
+      const password = siswa["Password"] || "password123"; // default jika kosong
+      const status = siswa["Status"]?.toString().toLowerCase() === "aktif";
+
+      if (!email || !nama) {
+        console.warn("⚠️ Data siswa tidak lengkap:", siswa);
+        continue;
+      }
+
+      let uid;
+      try {
+        // 1️⃣ Coba buat akun baru di Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        uid = userCredential.user.uid;
+        console.log(`✅ Akun baru dibuat: ${email}`);
+      } catch (err) {
+        if (err.code === "auth/email-already-in-use") {
+          console.log(`ℹ️ Email sudah ada: ${email}`);
+          // Cari UID berdasarkan email di node users
+          const snap = await database.ref("users").orderByChild("email").equalTo(email).once("value");
+          if (snap.exists()) {
+            uid = Object.keys(snap.val())[0];
+          } else {
+            console.warn(`⚠️ Email ${email} sudah ada di Authentication tapi belum ada di Database`);
+            continue;
+          }
+        } else {
+          throw err; // lempar error lain
+        }
+      }
+
+      // 2️⃣ Simpan / update detail siswa di Realtime Database
+      await database.ref("users").child(uid).set({
+        name: nama,
+        email: email,
+        role: "student",
+        isActive: status,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      console.log(`✅ Data siswa tersimpan: ${nama} (${email})`);
+    }
+
+    Swal.fire("Sukses", "Semua siswa berhasil diimport / diperbarui!", "success");
+  } catch (error) {
+    console.error("❌ Gagal import siswa:", error);
+    Swal.fire("Error", error.message, "error");
+  }
+});
 
         // Database helper functions
         const dbRef = {
