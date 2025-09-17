@@ -2743,7 +2743,8 @@
                 console.log('⚠️ Database offline - skipping sample data initialization');
                 return;
             }
-
+            
+            try {                
                 // Create sample exam if not exists
                 const examSnapshot = await database.ref('exams').once('value');
                 const existingExams = examSnapshot.val();
