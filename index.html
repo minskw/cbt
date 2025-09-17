@@ -425,17 +425,19 @@
     </div>
 
     <script>
-        // Firebase Configuration - GANTI DENGAN KONFIGURASI FIREBASE ANDA
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0", // Ganti dengan API Key Anda
-            authDomain: "cbt-min-singkawang.firebaseapp.com", // Ganti dengan Auth Domain Anda
-            databaseURL: "https://cbt-min-singkawang-default-rtdb.firebaseio.com", // Ganti dengan Database URL Anda
-            projectId: "cbt-min-singkawang", // Ganti dengan Project ID Anda
-            storageBucket: "cbt-min-singkawang.appspot.com", // Ganti dengan Storage Bucket Anda
-            messagingSenderId: "123456789012", // Ganti dengan Messaging Sender ID Anda
-            appId: "1:123456789012:web:abcdef123456" // Ganti dengan App ID Anda
-        };
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
+  authDomain: "jual-beli-d9d80.firebaseapp.com",
+  databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "jual-beli-d9d80",
+  storageBucket: "jual-beli-d9d80.firebasestorage.app",
+  messagingSenderId: "1080322577223",
+  appId: "1:1080322577223:web:624adcdbffb699850d7262"
+};
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
         // Initialize Firebase with proper error handling
         let database, auth, isFirebaseConnected = false;
         
