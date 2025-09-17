@@ -43,13 +43,13 @@
                         <i class="fas fa-circle text-green-400 mr-1"></i>Online
                     </div>
                     <button id="loginBtn" class="text-white hover:text-green-200 px-3 py-2 rounded-md">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                        <i class="fas fa-sign-in-alt mr-2"></i>
                     </button>
                     <button id="adminBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md hidden">
-                        <i class="fas fa-cog mr-2"></i>Admin Panel
+                        <i class="fas fa-cog mr-2"></i>
                     </button>
                     <button id="logoutBtn" class="text-white hover:text-green-200 px-3 py-2 rounded-md hidden">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        <i class="fas fa-sign-out-alt mr-2"></i>
                     </button>
                 </div>
             </div>
@@ -449,11 +449,11 @@ const firebaseConfig = {
                 
                 if (connectionStatus) {
                     if (isFirebaseConnected) {
-                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>Database Connected';
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>';
                         connectionStatus.classList.remove('hidden');
                         console.log("✅ Database connection active");
                     } else {
-                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Database Offline';
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Offline';
                         connectionStatus.classList.remove('hidden');
                         console.log("❌ Database connection lost");
                     }
