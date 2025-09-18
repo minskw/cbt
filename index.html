@@ -620,6 +620,16 @@
         let timeLeft = 0;
         let currentQuestions = [];
 
+        // Utility function to shuffle array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
         // DOM Elements
         const loginBtn = document.getElementById('loginBtn');
         const adminBtn = document.getElementById('adminBtn');
@@ -864,6 +874,49 @@
             });
         });
 
+        // Setup Subject Modal
+        function setupSubjectModal() {
+            const addSubjectBtn = document.getElementById('addSubjectBtn');
+            const closeSubjectModal = document.getElementById('closeSubjectModal');
+            const cancelSubjectBtn = document.getElementById('cancelSubjectBtn');
+            const subjectForm = document.getElementById('subjectForm');
+            const subjectModal = document.getElementById('subjectModal');
+            
+            if (addSubjectBtn) {
+                addSubjectBtn.addEventListener('click', () => {
+                    subjectModal.classList.remove('hidden');
+                    subjectForm.reset();
+                    // Clear editing state when adding new subject
+                    subjectForm.removeAttribute('data-editing-id');
+                });
+            }
+
+            if (closeSubjectModal) {
+                closeSubjectModal.addEventListener('click', () => {
+                    subjectModal.classList.add('hidden');
+                });
+            }
+
+            if (cancelSubjectBtn) {
+                cancelSubjectBtn.addEventListener('click', () => {
+                    subjectModal.classList.add('hidden');
+                });
+            }
+
+            // Close modal when clicking outside
+            if (subjectModal) {
+                subjectModal.addEventListener('click', (e) => {
+                    if (e.target === subjectModal) {
+                        subjectModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (subjectForm) {
+                subjectForm.addEventListener('submit', saveSubject);
+            }
+        }
+
         // Question Type Change Handler
         document.getElementById('questionType').addEventListener('change', (e) => {
             generateOptionsForQuestionType(e.target.value);
@@ -953,6 +1006,7 @@
             // Setup admin button event listeners
             setupAddParticipantBtn();
             setupAddExamBtn();
+            setupSubjectModal();
             setupQuestionModal();
             setupImportModal();
         }
@@ -1190,6 +1244,55 @@
                 Object.keys(exams).forEach(examId => {
                     const quiz = exams[examId];
                     if (quiz.isActive) {
+                        // Check if quiz is available based on schedule
+                        const now = new Date();
+                        const currentDate = now.toISOString().split('T')[0];
+                        const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+                        
+                        let isAvailable = false;
+                        let scheduleStatus = '';
+                        let buttonClass = 'bg-green-600 hover:bg-green-700';
+                        let buttonText = '<i class="fas fa-play mr-2"></i>Mulai Quiz';
+                        let buttonDisabled = '';
+                        
+                        if (quiz.startDate && quiz.endDate && quiz.startTime && quiz.endTime) {
+                            const startDateTime = new Date(quiz.startDate + 'T' + quiz.startTime);
+                            const endDateTime = new Date(quiz.endDate + 'T' + quiz.endTime);
+                            
+                            if (now < startDateTime) {
+                                scheduleStatus = `<div class="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
+                                    <div class="flex items-center text-yellow-800 text-sm">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <span>Belum dimulai - Tersedia mulai ${new Date(startDateTime).toLocaleString('id-ID')}</span>
+                                    </div>
+                                </div>`;
+                                buttonClass = 'bg-gray-400 cursor-not-allowed';
+                                buttonText = '<i class="fas fa-clock mr-2"></i>Belum Tersedia';
+                                buttonDisabled = 'disabled';
+                            } else if (now > endDateTime) {
+                                scheduleStatus = `<div class="bg-red-50 border border-red-200 rounded p-2 mb-3">
+                                    <div class="flex items-center text-red-800 text-sm">
+                                        <i class="fas fa-times-circle mr-2"></i>
+                                        <span>Waktu ujian telah berakhir pada ${new Date(endDateTime).toLocaleString('id-ID')}</span>
+                                    </div>
+                                </div>`;
+                                buttonClass = 'bg-gray-400 cursor-not-allowed';
+                                buttonText = '<i class="fas fa-times-circle mr-2"></i>Waktu Berakhir';
+                                buttonDisabled = 'disabled';
+                            } else {
+                                isAvailable = true;
+                                scheduleStatus = `<div class="bg-green-50 border border-green-200 rounded p-2 mb-3">
+                                    <div class="flex items-center text-green-800 text-sm">
+                                        <i class="fas fa-check-circle mr-2"></i>
+                                        <span>Tersedia hingga ${new Date(endDateTime).toLocaleString('id-ID')}</span>
+                                    </div>
+                                </div>`;
+                            }
+                        } else {
+                            // No schedule set, always available
+                            isAvailable = true;
+                        }
+                        
                         const quizCard = document.createElement('div');
                         quizCard.className = 'bg-white rounded-lg shadow-lg p-6 quiz-card card-shadow';
                         quizCard.innerHTML = `
@@ -1198,7 +1301,18 @@
                                 <h3 class="text-xl font-bold text-gray-800 mb-2">${quiz.title}</h3>
                                 <p class="text-gray-600 mb-4">${quiz.description}</p>
                             </div>
+                            ${scheduleStatus}
                             <div class="space-y-2 mb-4">
+                                ${quiz.startDate && quiz.endDate ? `
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Periode:</span>
+                                    <span class="font-medium">${new Date(quiz.startDate).toLocaleDateString('id-ID')} - ${new Date(quiz.endDate).toLocaleDateString('id-ID')}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Jam:</span>
+                                    <span class="font-medium">${quiz.startTime} - ${quiz.endTime}</span>
+                                </div>
+                                ` : ''}
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Durasi:</span>
                                     <span class="font-medium">${quiz.duration} menit</span>
@@ -1212,8 +1326,10 @@
                                     <span class="font-medium">${quiz.passingScore}%</span>
                                 </div>
                             </div>
-                            <button onclick="startQuiz('${examId}')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200">
-                                <i class="fas fa-play mr-2"></i>Mulai Quiz
+                            <button onclick="${isAvailable ? `startQuiz('${examId}')` : 'return false;'}" 
+                                    class="w-full ${buttonClass} text-white py-2 px-4 rounded-md transition duration-200" 
+                                    ${buttonDisabled}>
+                                ${buttonText}
                             </button>
                         `;
                         quizList.appendChild(quizCard);
@@ -1331,7 +1447,11 @@
                             duration: 30,
                             totalQuestions: 5,
                             passingScore: 70,
-                            isActive: true
+                            isActive: true,
+                            startDate: new Date().toISOString().split('T')[0],
+                            endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                            startTime: '08:00',
+                            endTime: '16:00'
                         },
                         'demo-exam-2': {
                             title: 'Quiz Akidah Islam',
@@ -1339,7 +1459,11 @@
                             duration: 25,
                             totalQuestions: 4,
                             passingScore: 75,
-                            isActive: true
+                            isActive: true,
+                            startDate: new Date().toISOString().split('T')[0],
+                            endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                            startTime: '09:00',
+                            endTime: '15:00'
                         },
                         'demo-exam-3': {
                             title: 'Quiz Sejarah Islam',
@@ -1347,7 +1471,11 @@
                             duration: 40,
                             totalQuestions: 8,
                             passingScore: 80,
-                            isActive: false
+                            isActive: false,
+                            startDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                            endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                            startTime: '10:00',
+                            endTime: '14:00'
                         }
                     };
                 } else {
@@ -1360,17 +1488,51 @@
                 
                 Object.keys(exams).forEach(examId => {
                     const quiz = exams[examId];
+                    
+                    // Check schedule status
+                    let scheduleStatus = '';
+                    let scheduleClass = '';
+                    if (quiz.startDate && quiz.endDate && quiz.startTime && quiz.endTime) {
+                        const now = new Date();
+                        const startDateTime = new Date(quiz.startDate + 'T' + quiz.startTime);
+                        const endDateTime = new Date(quiz.endDate + 'T' + quiz.endTime);
+                        
+                        if (now < startDateTime) {
+                            scheduleStatus = 'Belum Dimulai';
+                            scheduleClass = 'bg-yellow-100 text-yellow-800';
+                        } else if (now > endDateTime) {
+                            scheduleStatus = 'Berakhir';
+                            scheduleClass = 'bg-red-100 text-red-800';
+                        } else {
+                            scheduleStatus = 'Berlangsung';
+                            scheduleClass = 'bg-green-100 text-green-800';
+                        }
+                    }
+                    
                     const examCard = document.createElement('div');
                     examCard.className = 'bg-white rounded-lg shadow-lg p-6';
                     examCard.innerHTML = `
                         <div class="flex justify-between items-start mb-4">
                             <h4 class="text-lg font-bold text-gray-800">${quiz.title}</h4>
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${quiz.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                ${quiz.isActive ? 'Aktif' : 'Nonaktif'}
-                            </span>
+                            <div class="flex flex-col items-end space-y-1">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${quiz.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${quiz.isActive ? 'Aktif' : 'Nonaktif'}
+                                </span>
+                                ${scheduleStatus ? `<span class="px-2 py-1 text-xs font-semibold rounded-full ${scheduleClass}">${scheduleStatus}</span>` : ''}
+                            </div>
                         </div>
                         <p class="text-gray-600 mb-4">${quiz.description}</p>
                         <div class="space-y-2 mb-4">
+                            ${quiz.startDate && quiz.endDate ? `
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Periode:</span>
+                                <span>${new Date(quiz.startDate).toLocaleDateString('id-ID')} - ${new Date(quiz.endDate).toLocaleDateString('id-ID')}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Jam:</span>
+                                <span>${quiz.startTime} - ${quiz.endTime}</span>
+                            </div>
+                            ` : ''}
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Durasi:</span>
                                 <span>${quiz.duration} menit</span>
@@ -1731,6 +1893,208 @@
                         <textarea id="questionExplanation" class="w-full px-3 py-2 border border-gray-300 rounded-md arabic-text" rows="2" placeholder="Penjelasan jawaban untuk peserta"></textarea>
                     </div>
                 `;
+            }
+        }
+
+        async function saveSubject(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const isEditing = form.dataset.editingId;
+            
+            const subjectData = {
+                name: document.getElementById('subjectName').value.trim(),
+                code: document.getElementById('subjectCode').value.trim().toUpperCase(),
+                description: document.getElementById('subjectDescription').value.trim(),
+                isActive: true,
+                createdBy: currentUser.uid
+            };
+
+            // Validate required fields
+            if (!subjectData.name || !subjectData.code) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Data Tidak Lengkap',
+                    text: 'Nama dan kode mata pelajaran harus diisi'
+                });
+                return;
+            }
+
+            try {
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo mode - just show success
+                    Swal.fire({
+                        icon: 'success',
+                        title: isEditing ? 'Mata Pelajaran Berhasil Diupdate!' : 'Mata Pelajaran Berhasil Disimpan!',
+                        text: 'Dalam mode demo, data tidak disimpan secara permanen',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else if (isFirebaseConnected) {
+                    // Real Firebase mode
+                    if (isEditing) {
+                        // Update existing subject
+                        await dbRef.subjects().child(isEditing).update({
+                            ...subjectData,
+                            updatedAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Mata Pelajaran Berhasil Diupdate!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        // Create new subject
+                        await dbRef.subjects().push().set({
+                            ...subjectData,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Mata Pelajaran Berhasil Disimpan!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                } else {
+                    // Firebase not connected
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Database Offline',
+                        text: 'Tidak dapat menyimpan mata pelajaran saat database offline. Gunakan mode demo.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+
+                document.getElementById('subjectModal').classList.add('hidden');
+                // Clear editing state
+                form.removeAttribute('data-editing-id');
+                loadSubjects();
+            } catch (error) {
+                console.error('Error saving subject:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: isEditing ? 'Gagal Mengupdate Mata Pelajaran' : 'Gagal Menyimpan Mata Pelajaran',
+                    text: error.message
+                });
+            }
+        }
+
+        async function editSubject(subjectId) {
+            try {
+                let subjectData = {};
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo data
+                    const demoSubjects = {
+                        'fiqh': {
+                            name: 'Fiqh',
+                            code: 'FQH',
+                            description: 'Ilmu tentang hukum-hukum syariat Islam',
+                            isActive: true
+                        },
+                        'akidah': {
+                            name: 'Akidah',
+                            code: 'AQD',
+                            description: 'Ilmu tentang keimanan dan kepercayaan dalam Islam',
+                            isActive: true
+                        },
+                        'akhlaq': {
+                            name: 'Akhlaq',
+                            code: 'AKH',
+                            description: 'Ilmu tentang budi pekerti dan moral Islam',
+                            isActive: true
+                        },
+                        'sirah': {
+                            name: 'Sirah Nabawiyah',
+                            code: 'SRH',
+                            description: 'Sejarah hidup Nabi Muhammad SAW',
+                            isActive: false
+                        }
+                    };
+                    subjectData = demoSubjects[subjectId] || {};
+                } else if (isFirebaseConnected) {
+                    const snapshot = await dbRef.subjects().child(subjectId).once('value');
+                    subjectData = snapshot.val() || {};
+                }
+
+                if (!subjectData.name) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Mata Pelajaran Tidak Ditemukan',
+                        text: 'Data mata pelajaran tidak dapat dimuat'
+                    });
+                    return;
+                }
+
+                // Open subject modal with existing data
+                const subjectModal = document.getElementById('subjectModal');
+                subjectModal.classList.remove('hidden');
+                
+                // Fill form with existing data
+                document.getElementById('subjectName').value = subjectData.name || '';
+                document.getElementById('subjectCode').value = subjectData.code || '';
+                document.getElementById('subjectDescription').value = subjectData.description || '';
+
+                // Store the subject ID for updating
+                document.getElementById('subjectForm').dataset.editingId = subjectId;
+                
+            } catch (error) {
+                console.error('Error loading subject for edit:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Memuat Mata Pelajaran',
+                    text: 'Terjadi kesalahan saat memuat data mata pelajaran'
+                });
+            }
+        }
+
+        async function deleteSubject(subjectId) {
+            const result = await Swal.fire({
+                title: 'Hapus Mata Pelajaran?',
+                text: 'Mata pelajaran yang dihapus tidak dapat dikembalikan!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    if (currentUser && currentUser.uid === 'demo-admin') {
+                        // Demo mode - just show success
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Mata Pelajaran Berhasil Dihapus!',
+                            text: 'Dalam mode demo, data tidak dihapus secara permanen',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        // Real Firebase mode
+                        await dbRef.subjects().child(subjectId).remove();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Mata Pelajaran Berhasil Dihapus!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    loadSubjects();
+                } catch (error) {
+                    console.error('Error deleting subject:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menghapus Mata Pelajaran',
+                        text: error.message
+                    });
+                }
             }
         }
 
@@ -2235,39 +2599,198 @@
                     return;
                 }
 
+                // Load subjects for dropdown
+                let subjectOptions = '<option value="">Pilih Mata Pelajaran</option>';
+                
+                try {
+                    let subjects = {};
+                    
+                    if (currentUser && currentUser.uid === 'demo-admin') {
+                        subjects = {
+                            'fiqh': { name: 'Fiqh', code: 'FQH', isActive: true },
+                            'akidah': { name: 'Akidah', code: 'AQD', isActive: true },
+                            'akhlaq': { name: 'Akhlaq', code: 'AKH', isActive: true },
+                            'sirah': { name: 'Sirah Nabawiyah', code: 'SRH', isActive: true }
+                        };
+                    } else if (isFirebaseConnected) {
+                        const snapshot = await dbRef.subjects().once('value');
+                        subjects = snapshot.val() || {};
+                    }
+                    
+                    Object.keys(subjects).forEach(subjectId => {
+                        const subject = subjects[subjectId];
+                        if (subject.isActive) {
+                            const selected = examData.subjectId === subjectId ? 'selected' : '';
+                            subjectOptions += `<option value="${subjectId}" ${selected}>${subject.name} (${subject.code})</option>`;
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading subjects:', error);
+                }
+
                 const { value: formValues } = await Swal.fire({
                     title: 'Edit Ujian',
                     html: `
-                        <div class="space-y-4">
-                            <input id="swal-edit-title" class="swal2-input" placeholder="Judul Ujian" value="${examData.title || ''}" required>
-                            <textarea id="swal-edit-description" class="swal2-textarea" placeholder="Deskripsi Ujian">${examData.description || ''}</textarea>
-                            <input id="swal-edit-duration" class="swal2-input" type="number" placeholder="Durasi (menit)" value="${examData.duration || ''}" min="1" required>
-                            <input id="swal-edit-questions" class="swal2-input" type="number" placeholder="Jumlah Soal" value="${examData.totalQuestions || ''}" min="1" required>
-                            <input id="swal-edit-passing" class="swal2-input" type="number" placeholder="Nilai Lulus (%)" value="${examData.passingScore || ''}" min="0" max="100" required>
-                            <select id="swal-edit-status" class="swal2-select">
-                                <option value="true" ${examData.isActive ? 'selected' : ''}>Aktif</option>
-                                <option value="false" ${!examData.isActive ? 'selected' : ''}>Nonaktif</option>
-                            </select>
+                        <div class="text-left space-y-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Judul Ujian *</label>
+                                <input id="swal-edit-title" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Judul Ujian" value="${examData.title || ''}" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Mata Pelajaran *</label>
+                                <select id="swal-edit-subject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                    ${subjectOptions}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Ujian</label>
+                                <textarea id="swal-edit-description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3" placeholder="Deskripsi Ujian">${examData.description || ''}</textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Mulai *</label>
+                                    <input id="swal-edit-start-date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="date" value="${examData.startDate || ''}" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Selesai *</label>
+                                    <input id="swal-edit-end-date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="date" value="${examData.endDate || ''}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Jam Mulai *</label>
+                                    <input id="swal-edit-start-time" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="time" value="${examData.startTime || ''}" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Jam Selesai *</label>
+                                    <input id="swal-edit-end-time" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="time" value="${examData.endTime || ''}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Durasi (menit) *</label>
+                                    <input id="swal-edit-duration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="number" placeholder="Durasi (menit)" value="${examData.duration || ''}" min="1" max="300" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Jumlah Soal *</label>
+                                    <input id="swal-edit-questions" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="number" placeholder="Jumlah Soal" value="${examData.totalQuestions || ''}" min="1" max="100" required>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Nilai Lulus (%) *</label>
+                                    <input id="swal-edit-passing" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="number" placeholder="Nilai Lulus (%)" value="${examData.passingScore || ''}" min="0" max="100" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Status *</label>
+                                    <select id="swal-edit-status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <option value="true" ${examData.isActive ? 'selected' : ''}>Aktif</option>
+                                        <option value="false" ${!examData.isActive ? 'selected' : ''}>Nonaktif</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     `,
+                    width: '600px',
                     focusConfirm: false,
                     showCancelButton: true,
-                    confirmButtonText: 'Update',
+                    confirmButtonText: '<i class="fas fa-save mr-2"></i>Update',
                     cancelButtonText: 'Batal',
+                    confirmButtonColor: '#059669',
+                    cancelButtonColor: '#6b7280',
                     preConfirm: () => {
-                        const title = document.getElementById('swal-edit-title').value;
-                        const description = document.getElementById('swal-edit-description').value;
+                        const title = document.getElementById('swal-edit-title').value.trim();
+                        const subjectId = document.getElementById('swal-edit-subject').value;
+                        const description = document.getElementById('swal-edit-description').value.trim();
+                        const startDate = document.getElementById('swal-edit-start-date').value;
+                        const endDate = document.getElementById('swal-edit-end-date').value;
+                        const startTime = document.getElementById('swal-edit-start-time').value;
+                        const endTime = document.getElementById('swal-edit-end-time').value;
                         const duration = parseInt(document.getElementById('swal-edit-duration').value);
                         const totalQuestions = parseInt(document.getElementById('swal-edit-questions').value);
                         const passingScore = parseInt(document.getElementById('swal-edit-passing').value);
                         const isActive = document.getElementById('swal-edit-status').value === 'true';
                         
-                        if (!title || !duration || !totalQuestions || isNaN(passingScore)) {
-                            Swal.showValidationMessage('Field yang wajib harus diisi dengan benar');
+                        if (!title) {
+                            Swal.showValidationMessage('Judul ujian harus diisi');
                             return false;
                         }
                         
-                        return { title, description, duration, totalQuestions, passingScore, isActive };
+                        if (!subjectId) {
+                            Swal.showValidationMessage('Mata pelajaran harus dipilih');
+                            return false;
+                        }
+                        
+                        if (!startDate || !endDate) {
+                            Swal.showValidationMessage('Tanggal mulai dan selesai harus diisi');
+                            return false;
+                        }
+                        
+                        if (!startTime || !endTime) {
+                            Swal.showValidationMessage('Jam mulai dan selesai harus diisi');
+                            return false;
+                        }
+                        
+                        // Validate date range
+                        const startDateTime = new Date(startDate + 'T' + startTime);
+                        const endDateTime = new Date(endDate + 'T' + endTime);
+                        const now = new Date();
+                        
+                        if (startDateTime < now) {
+                            Swal.showValidationMessage('Tanggal dan jam mulai tidak boleh di masa lalu');
+                            return false;
+                        }
+                        
+                        if (endDateTime <= startDateTime) {
+                            Swal.showValidationMessage('Tanggal dan jam selesai harus setelah waktu mulai');
+                            return false;
+                        }
+                        
+                        // Check if duration fits within the time window
+                        const timeWindowMinutes = (endDateTime - startDateTime) / (1000 * 60);
+                        if (duration > timeWindowMinutes) {
+                            Swal.showValidationMessage(`Durasi ujian (${duration} menit) melebihi rentang waktu yang tersedia (${Math.floor(timeWindowMinutes)} menit)`);
+                            return false;
+                        }
+                        
+                        if (!duration || duration < 1 || duration > 300) {
+                            Swal.showValidationMessage('Durasi harus antara 1-300 menit');
+                            return false;
+                        }
+                        
+                        if (!totalQuestions || totalQuestions < 1 || totalQuestions > 100) {
+                            Swal.showValidationMessage('Jumlah soal harus antara 1-100');
+                            return false;
+                        }
+                        
+                        if (isNaN(passingScore) || passingScore < 0 || passingScore > 100) {
+                            Swal.showValidationMessage('Nilai lulus harus antara 0-100%');
+                            return false;
+                        }
+                        
+                        return { 
+                            title, 
+                            subjectId, 
+                            description, 
+                            startDate, 
+                            endDate, 
+                            startTime, 
+                            endTime, 
+                            duration, 
+                            totalQuestions, 
+                            passingScore, 
+                            isActive 
+                        };
                     }
                 });
 
@@ -2377,7 +2900,7 @@
                 
                 // Check if demo user
                 if (currentUser && currentUser.uid === 'demo-student') {
-                    // Demo quiz data
+                    // Demo quiz data with schedule
                     const demoExams = {
                         'demo-exam-1': {
                             title: 'Quiz Fiqh Dasar',
@@ -2385,7 +2908,11 @@
                             duration: 30,
                             totalQuestions: 5,
                             passingScore: 70,
-                            isActive: true
+                            isActive: true,
+                            startDate: new Date().toISOString().split('T')[0],
+                            endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                            startTime: '08:00',
+                            endTime: '16:00'
                         },
                         'demo-exam-2': {
                             title: 'Quiz Akidah Islam',
@@ -2393,7 +2920,11 @@
                             duration: 25,
                             totalQuestions: 4,
                             passingScore: 75,
-                            isActive: true
+                            isActive: true,
+                            startDate: new Date().toISOString().split('T')[0],
+                            endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                            startTime: '09:00',
+                            endTime: '15:00'
                         }
                     };
                     currentQuizData = demoExams[examId];
@@ -2410,6 +2941,66 @@
                         text: 'Quiz yang dipilih tidak tersedia'
                     });
                     return;
+                }
+
+                // Check schedule availability
+                if (currentQuizData.startDate && currentQuizData.endDate && currentQuizData.startTime && currentQuizData.endTime) {
+                    const now = new Date();
+                    const startDateTime = new Date(currentQuizData.startDate + 'T' + currentQuizData.startTime);
+                    const endDateTime = new Date(currentQuizData.endDate + 'T' + currentQuizData.endTime);
+                    
+                    if (now < startDateTime) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Quiz Belum Dimulai',
+                            html: `
+                                <div class="text-center">
+                                    <p class="mb-2">Quiz ini belum dapat dikerjakan.</p>
+                                    <p class="text-sm text-gray-600">Tersedia mulai: <strong>${startDateTime.toLocaleString('id-ID')}</strong></p>
+                                </div>
+                            `
+                        });
+                        return;
+                    }
+                    
+                    if (now > endDateTime) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Waktu Quiz Berakhir',
+                            html: `
+                                <div class="text-center">
+                                    <p class="mb-2">Waktu untuk mengerjakan quiz ini telah berakhir.</p>
+                                    <p class="text-sm text-gray-600">Berakhir pada: <strong>${endDateTime.toLocaleString('id-ID')}</strong></p>
+                                </div>
+                            `
+                        });
+                        return;
+                    }
+                    
+                    // Check if there's enough time left to complete the quiz
+                    const timeLeftInWindow = Math.floor((endDateTime - now) / (1000 * 60)); // minutes
+                    if (timeLeftInWindow < currentQuizData.duration) {
+                        const result = await Swal.fire({
+                            title: 'Waktu Terbatas',
+                            html: `
+                                <div class="text-center">
+                                    <p class="mb-2">Sisa waktu ujian: <strong>${timeLeftInWindow} menit</strong></p>
+                                    <p class="mb-2">Durasi quiz: <strong>${currentQuizData.duration} menit</strong></p>
+                                    <p class="text-sm text-red-600">⚠️ Waktu mungkin tidak cukup untuk menyelesaikan quiz!</p>
+                                </div>
+                            `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#059669',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Tetap Mulai',
+                            cancelButtonText: 'Batal'
+                        });
+                        
+                        if (!result.isConfirmed) {
+                            return;
+                        }
+                    }
                 }
 
                 currentQuiz = currentQuizData;
@@ -2490,17 +3081,109 @@
                                 explanation: 'النبي محمد صلى الله عليه وسلم ولد في مكة المكرمة'
                             }
                         ];
-                        currentQuestions = demoQuestions.slice(0, currentQuiz.totalQuestions);
+                        // Shuffle demo questions and their options
+                        let shuffledDemoQuestions = shuffleArray(demoQuestions);
+                        
+                        // Shuffle options for multiple choice questions in demo
+                        shuffledDemoQuestions = shuffledDemoQuestions.map(question => {
+                            if (question.type === 'multiple_choice' || question.type === 'complex_multiple_choice') {
+                                if (question.options) {
+                                    // Create array of options with their original indices
+                                    const optionsArray = Object.keys(question.options).map(index => ({
+                                        originalIndex: parseInt(index),
+                                        ...question.options[index]
+                                    }));
+                                    
+                                    // Shuffle the options
+                                    const shuffledOptions = shuffleArray(optionsArray);
+                                    
+                                    // Rebuild options object with new indices
+                                    const newOptions = {};
+                                    let newCorrectAnswer = 0;
+                                    
+                                    shuffledOptions.forEach((option, newIndex) => {
+                                        newOptions[newIndex] = {
+                                            text: option.text,
+                                            image: option.image || ''
+                                        };
+                                        
+                                        // Update correct answer index
+                                        if (option.originalIndex === question.correctAnswer) {
+                                            newCorrectAnswer = newIndex;
+                                        }
+                                    });
+                                    
+                                    return {
+                                        ...question,
+                                        options: newOptions,
+                                        correctAnswer: newCorrectAnswer
+                                    };
+                                }
+                            }
+                            return question;
+                        });
+                        
+                        currentQuestions = shuffledDemoQuestions.slice(0, currentQuiz.totalQuestions);
                     } else {
                         // Load from Firebase for real users
                         const questionsSnapshot = await dbRef.questions().once('value');
                         const allQuestions = questionsSnapshot.val() || {};
                         
-                        // Convert to array and shuffle
-                        currentQuestions = Object.keys(allQuestions).map(id => ({
+                        // Convert to array, filter by subject if needed, and shuffle
+                        let questionArray = Object.keys(allQuestions).map(id => ({
                             id,
                             ...allQuestions[id]
-                        })).slice(0, currentQuiz.totalQuestions);
+                        }));
+                        
+                        // Filter by subject if exam has specific subject
+                        if (currentQuiz.subjectId) {
+                            questionArray = questionArray.filter(q => q.subjectId === currentQuiz.subjectId);
+                        }
+                        
+                        // Shuffle questions randomly
+                        questionArray = shuffleArray(questionArray);
+                        
+                        // Take only the required number of questions
+                        currentQuestions = questionArray.slice(0, currentQuiz.totalQuestions);
+                        
+                        // Shuffle options for multiple choice questions
+                        currentQuestions = currentQuestions.map(question => {
+                            if (question.type === 'multiple_choice' || question.type === 'complex_multiple_choice') {
+                                if (question.options) {
+                                    // Create array of options with their original indices
+                                    const optionsArray = Object.keys(question.options).map(index => ({
+                                        originalIndex: parseInt(index),
+                                        ...question.options[index]
+                                    }));
+                                    
+                                    // Shuffle the options
+                                    const shuffledOptions = shuffleArray(optionsArray);
+                                    
+                                    // Rebuild options object with new indices
+                                    const newOptions = {};
+                                    let newCorrectAnswer = 0;
+                                    
+                                    shuffledOptions.forEach((option, newIndex) => {
+                                        newOptions[newIndex] = {
+                                            text: option.text,
+                                            image: option.image || ''
+                                        };
+                                        
+                                        // Update correct answer index
+                                        if (option.originalIndex === question.correctAnswer) {
+                                            newCorrectAnswer = newIndex;
+                                        }
+                                    });
+                                    
+                                    return {
+                                        ...question,
+                                        options: newOptions,
+                                        correctAnswer: newCorrectAnswer
+                                    };
+                                }
+                            }
+                            return question;
+                        });
                     }
                     
                     initializeQuiz();
@@ -2913,34 +3596,213 @@
             const addExamBtn = document.getElementById('addExamBtn');
             if (addExamBtn) {
                 addExamBtn.addEventListener('click', async () => {
+                    // Load subjects for dropdown
+                    let subjectOptions = '<option value="">Pilih Mata Pelajaran</option>';
+                    
+                    try {
+                        let subjects = {};
+                        
+                        if (currentUser && currentUser.uid === 'demo-admin') {
+                            subjects = {
+                                'fiqh': { name: 'Fiqh', code: 'FQH', isActive: true },
+                                'akidah': { name: 'Akidah', code: 'AQD', isActive: true },
+                                'akhlaq': { name: 'Akhlaq', code: 'AKH', isActive: true },
+                                'sirah': { name: 'Sirah Nabawiyah', code: 'SRH', isActive: true }
+                            };
+                        } else if (isFirebaseConnected) {
+                            const snapshot = await dbRef.subjects().once('value');
+                            subjects = snapshot.val() || {};
+                        }
+                        
+                        Object.keys(subjects).forEach(subjectId => {
+                            const subject = subjects[subjectId];
+                            if (subject.isActive) {
+                                subjectOptions += `<option value="${subjectId}">${subject.name} (${subject.code})</option>`;
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error loading subjects:', error);
+                    }
+
                     const { value: formValues } = await Swal.fire({
                         title: 'Buat Ujian Baru',
                         html: `
-                            <div class="space-y-4">
-                                <input id="swal-title" class="swal2-input" placeholder="Judul Ujian" required>
-                                <textarea id="swal-description" class="swal2-textarea" placeholder="Deskripsi Ujian"></textarea>
-                                <input id="swal-duration" class="swal2-input" type="number" placeholder="Durasi (menit)" min="1" required>
-                                <input id="swal-questions" class="swal2-input" type="number" placeholder="Jumlah Soal" min="1" required>
-                                <input id="swal-passing" class="swal2-input" type="number" placeholder="Nilai Lulus (%)" min="0" max="100" required>
+                            <div class="text-left space-y-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Judul Ujian *</label>
+                                    <input id="swal-title" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Contoh: Quiz Fiqh Semester 1" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Mata Pelajaran *</label>
+                                    <select id="swal-subject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                        ${subjectOptions}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Ujian</label>
+                                    <textarea id="swal-description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3" placeholder="Deskripsi singkat tentang ujian ini"></textarea>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Mulai *</label>
+                                        <input id="swal-start-date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="date" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Selesai *</label>
+                                        <input id="swal-end-date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="date" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Jam Mulai *</label>
+                                        <input id="swal-start-time" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="time" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Jam Selesai *</label>
+                                        <input id="swal-end-time" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="time" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Durasi (menit) *</label>
+                                        <input id="swal-duration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="number" placeholder="30" min="1" max="300" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Jumlah Soal *</label>
+                                        <input id="swal-questions" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="number" placeholder="10" min="1" max="100" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Nilai Lulus (%) *</label>
+                                        <input id="swal-passing" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="number" placeholder="70" min="0" max="100" required>
+                                        <p class="text-xs text-gray-500 mt-1">Nilai minimum untuk dinyatakan lulus</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-bold mb-2">Status *</label>
+                                        <select id="swal-status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                            <option value="true">Aktif</option>
+                                            <option value="false">Nonaktif</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <div class="flex items-start">
+                                        <i class="fas fa-info-circle text-blue-600 mt-1 mr-2"></i>
+                                        <div class="text-sm text-blue-800">
+                                            <p class="font-semibold mb-1">Catatan:</p>
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li>Pastikan sudah ada soal untuk mata pelajaran yang dipilih</li>
+                                                <li>Soal akan dipilih secara acak dari bank soal</li>
+                                                <li>Durasi ujian harus muat dalam rentang waktu yang ditentukan</li>
+                                                <li>Field bertanda (*) wajib diisi</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         `,
+                        width: '600px',
                         focusConfirm: false,
                         showCancelButton: true,
-                        confirmButtonText: 'Buat',
+                        confirmButtonText: '<i class="fas fa-plus mr-2"></i>Buat Ujian',
                         cancelButtonText: 'Batal',
+                        confirmButtonColor: '#059669',
+                        cancelButtonColor: '#6b7280',
                         preConfirm: () => {
-                            const title = document.getElementById('swal-title').value;
-                            const description = document.getElementById('swal-description').value;
+                            const title = document.getElementById('swal-title').value.trim();
+                            const subjectId = document.getElementById('swal-subject').value;
+                            const description = document.getElementById('swal-description').value.trim();
+                            const startDate = document.getElementById('swal-start-date').value;
+                            const endDate = document.getElementById('swal-end-date').value;
+                            const startTime = document.getElementById('swal-start-time').value;
+                            const endTime = document.getElementById('swal-end-time').value;
                             const duration = parseInt(document.getElementById('swal-duration').value);
                             const totalQuestions = parseInt(document.getElementById('swal-questions').value);
                             const passingScore = parseInt(document.getElementById('swal-passing').value);
+                            const isActive = document.getElementById('swal-status').value === 'true';
                             
-                            if (!title || !duration || !totalQuestions || !passingScore) {
-                                Swal.showValidationMessage('Field yang wajib harus diisi');
+                            if (!title) {
+                                Swal.showValidationMessage('Judul ujian harus diisi');
                                 return false;
                             }
                             
-                            return { title, description, duration, totalQuestions, passingScore };
+                            if (!subjectId) {
+                                Swal.showValidationMessage('Mata pelajaran harus dipilih');
+                                return false;
+                            }
+                            
+                            if (!startDate || !endDate) {
+                                Swal.showValidationMessage('Tanggal mulai dan selesai harus diisi');
+                                return false;
+                            }
+                            
+                            if (!startTime || !endTime) {
+                                Swal.showValidationMessage('Jam mulai dan selesai harus diisi');
+                                return false;
+                            }
+                            
+                            // Validate date range
+                            const startDateTime = new Date(startDate + 'T' + startTime);
+                            const endDateTime = new Date(endDate + 'T' + endTime);
+                            const now = new Date();
+                            
+                            if (startDateTime < now) {
+                                Swal.showValidationMessage('Tanggal dan jam mulai tidak boleh di masa lalu');
+                                return false;
+                            }
+                            
+                            if (endDateTime <= startDateTime) {
+                                Swal.showValidationMessage('Tanggal dan jam selesai harus setelah waktu mulai');
+                                return false;
+                            }
+                            
+                            // Check if duration fits within the time window
+                            const timeWindowMinutes = (endDateTime - startDateTime) / (1000 * 60);
+                            if (duration > timeWindowMinutes) {
+                                Swal.showValidationMessage(`Durasi ujian (${duration} menit) melebihi rentang waktu yang tersedia (${Math.floor(timeWindowMinutes)} menit)`);
+                                return false;
+                            }
+                            
+                            if (!duration || duration < 1 || duration > 300) {
+                                Swal.showValidationMessage('Durasi harus antara 1-300 menit');
+                                return false;
+                            }
+                            
+                            if (!totalQuestions || totalQuestions < 1 || totalQuestions > 100) {
+                                Swal.showValidationMessage('Jumlah soal harus antara 1-100');
+                                return false;
+                            }
+                            
+                            if (isNaN(passingScore) || passingScore < 0 || passingScore > 100) {
+                                Swal.showValidationMessage('Nilai lulus harus antara 0-100%');
+                                return false;
+                            }
+                            
+                            return { 
+                                title, 
+                                subjectId, 
+                                description, 
+                                startDate, 
+                                endDate, 
+                                startTime, 
+                                endTime, 
+                                duration, 
+                                totalQuestions, 
+                                passingScore, 
+                                isActive 
+                            };
                         }
                     });
 
@@ -2951,8 +3813,17 @@
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Ujian Berhasil Dibuat!',
-                                    text: 'Dalam mode demo, data tidak disimpan secara permanen',
-                                    timer: 3000,
+                                    html: `
+                                        <div class="text-center">
+                                            <p class="mb-2"><strong>Judul:</strong> ${formValues.title}</p>
+                                            <p class="mb-2"><strong>Mata Pelajaran:</strong> ${formValues.subjectId.toUpperCase()}</p>
+                                            <p class="mb-2"><strong>Durasi:</strong> ${formValues.duration} menit</p>
+                                            <p class="mb-2"><strong>Jumlah Soal:</strong> ${formValues.totalQuestions}</p>
+                                            <p class="mb-2"><strong>Nilai Lulus:</strong> ${formValues.passingScore}%</p>
+                                            <p class="text-sm text-orange-600 mt-3">Dalam mode demo, data tidak disimpan secara permanen</p>
+                                        </div>
+                                    `,
+                                    timer: 4000,
                                     showConfirmButton: false
                                 });
                                 loadExams();
@@ -2968,7 +3839,16 @@
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Ujian Berhasil Dibuat!',
-                                    timer: 2000,
+                                    html: `
+                                        <div class="text-center">
+                                            <p class="mb-2"><strong>Judul:</strong> ${formValues.title}</p>
+                                            <p class="mb-2"><strong>Mata Pelajaran:</strong> ${formValues.subjectId.toUpperCase()}</p>
+                                            <p class="mb-2"><strong>Durasi:</strong> ${formValues.duration} menit</p>
+                                            <p class="mb-2"><strong>Jumlah Soal:</strong> ${formValues.totalQuestions}</p>
+                                            <p class="mb-2"><strong>Nilai Lulus:</strong> ${formValues.passingScore}%</p>
+                                        </div>
+                                    `,
+                                    timer: 3000,
                                     showConfirmButton: false
                                 });
                                 
@@ -3679,5 +4559,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980c6aff4712407f',t:'MTc1ODE1MjEwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980c9523b13bcdfd',t:'MTc1ODE1MzgzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
