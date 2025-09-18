@@ -4727,11 +4727,596 @@
             }
         }
 
+        // Export Results to Excel
+        async function exportResults() {
+            try {
+                let results = {};
+                let users = {};
+                let exams = {};
+                let subjects = {};
+                
+                // Get filter values
+                const subjectFilter = document.getElementById('subjectFilterResults')?.value || '';
+                const examFilter = document.getElementById('examFilterResults')?.value || '';
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo data
+                    results = {
+                        'result-1': {
+                            userId: 'demo-student',
+                            examId: 'demo-exam-1',
+                            score: 85,
+                            correctAnswers: 4,
+                            totalQuestions: 5,
+                            passed: true,
+                            completedAt: Date.now() - 86400000
+                        },
+                        'result-2': {
+                            userId: 'student-2',
+                            examId: 'demo-exam-1',
+                            score: 60,
+                            correctAnswers: 3,
+                            totalQuestions: 5,
+                            passed: false,
+                            completedAt: Date.now() - 172800000
+                        },
+                        'result-3': {
+                            userId: 'student-3',
+                            examId: 'demo-exam-2',
+                            score: 90,
+                            correctAnswers: 4,
+                            totalQuestions: 4,
+                            passed: true,
+                            completedAt: Date.now() - 259200000
+                        }
+                    };
+                    
+                    users = {
+                        'demo-student': { name: 'Peserta Demo', email: 'peserta@email.com', class: '6A' },
+                        'student-2': { name: 'Ahmad Fauzi', email: 'ahmad@email.com', class: '6A' },
+                        'student-3': { name: 'Siti Aminah', email: 'siti@email.com', class: '6B' }
+                    };
+                    
+                    exams = {
+                        'demo-exam-1': { title: 'Quiz Fiqh Dasar', subjectId: 'fiqh' },
+                        'demo-exam-2': { title: 'Quiz Akidah Islam', subjectId: 'akidah' }
+                    };
+                    
+                    subjects = {
+                        'fiqh': { name: 'Fiqh', code: 'FQH' },
+                        'akidah': { name: 'Akidah', code: 'AQD' }
+                    };
+                } else if (isFirebaseConnected) {
+                    // Load from Firebase
+                    const [resultsSnapshot, usersSnapshot, examsSnapshot, subjectsSnapshot] = await Promise.all([
+                        dbRef.results().once('value'),
+                        dbRef.users().once('value'),
+                        dbRef.exams().once('value'),
+                        dbRef.subjects().once('value')
+                    ]);
+                    
+                    results = resultsSnapshot.val() || {};
+                    users = usersSnapshot.val() || {};
+                    exams = examsSnapshot.val() || {};
+                    subjects = subjectsSnapshot.val() || {};
+                }
+                
+                // Filter results
+                const filteredResults = Object.keys(results).filter(resultId => {
+                    const result = results[resultId];
+                    const exam = exams[result.examId] || {};
+                    
+                    if (subjectFilter && exam.subjectId !== subjectFilter) return false;
+                    if (examFilter && result.examId !== examFilter) return false;
+                    
+                    return true;
+                });
+                
+                if (filteredResults.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Tidak Ada Data',
+                        text: 'Tidak ada hasil ujian untuk diekspor dengan filter yang dipilih'
+                    });
+                    return;
+                }
+                
+                // Prepare export data
+                const exportData = filteredResults.map(resultId => {
+                    const result = results[resultId];
+                    const user = users[result.userId] || {};
+                    const exam = exams[result.examId] || {};
+                    const subject = subjects[exam.subjectId] || {};
+                    
+                    return {
+                        'Nama Peserta': user.name || 'Unknown',
+                        'Email': user.email || 'Unknown',
+                        'Kelas': user.class || '-',
+                        'Ujian': exam.title || 'Unknown',
+                        'Mata Pelajaran': subject.name || 'Unknown',
+                        'Kode Mapel': subject.code || '-',
+                        'Skor (%)': result.score,
+                        'Jawaban Benar': result.correctAnswers,
+                        'Total Soal': result.totalQuestions,
+                        'Status': result.passed ? 'Lulus' : 'Tidak Lulus',
+                        'Tanggal Ujian': new Date(result.completedAt).toLocaleDateString('id-ID'),
+                        'Waktu Ujian': new Date(result.completedAt).toLocaleTimeString('id-ID')
+                    };
+                });
+                
+                // Create Excel file
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                
+                // Set column widths
+                worksheet['!cols'] = [
+                    { width: 20 }, // Nama Peserta
+                    { width: 25 }, // Email
+                    { width: 10 }, // Kelas
+                    { width: 25 }, // Ujian
+                    { width: 20 }, // Mata Pelajaran
+                    { width: 12 }, // Kode Mapel
+                    { width: 10 }, // Skor
+                    { width: 12 }, // Jawaban Benar
+                    { width: 10 }, // Total Soal
+                    { width: 12 }, // Status
+                    { width: 15 }, // Tanggal
+                    { width: 15 }  // Waktu
+                ];
+                
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Hasil Ujian');
+                
+                // Add summary sheet
+                const totalResults = filteredResults.length;
+                const passedResults = filteredResults.filter(id => results[id].passed).length;
+                const failedResults = totalResults - passedResults;
+                const averageScore = totalResults > 0 ? 
+                    Math.round(filteredResults.reduce((sum, id) => sum + results[id].score, 0) / totalResults) : 0;
+                
+                const summaryData = [
+                    { 'Statistik': 'Total Peserta', 'Nilai': totalResults },
+                    { 'Statistik': 'Lulus', 'Nilai': passedResults },
+                    { 'Statistik': 'Tidak Lulus', 'Nilai': failedResults },
+                    { 'Statistik': 'Persentase Kelulusan', 'Nilai': totalResults > 0 ? `${Math.round((passedResults / totalResults) * 100)}%` : '0%' },
+                    { 'Statistik': 'Rata-rata Skor', 'Nilai': `${averageScore}%` },
+                    { 'Statistik': 'Tanggal Export', 'Nilai': new Date().toLocaleString('id-ID') }
+                ];
+                
+                const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+                summarySheet['!cols'] = [{ width: 25 }, { width: 20 }];
+                XLSX.utils.book_append_sheet(workbook, summarySheet, 'Ringkasan');
+                
+                // Generate filename
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                const filename = `Hasil_Ujian_${dateStr}_${timeStr}.xlsx`;
+                
+                XLSX.writeFile(workbook, filename);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Export Berhasil!',
+                    html: `
+                        <div class="text-center">
+                            <p class="mb-2">File berhasil disimpan:</p>
+                            <p class="font-mono text-sm bg-gray-100 p-2 rounded">${filename}</p>
+                            <p class="text-sm text-gray-600 mt-2">${totalResults} hasil ujian diekspor</p>
+                        </div>
+                    `,
+                    timer: 4000,
+                    showConfirmButton: false
+                });
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Export Gagal',
+                    text: 'Terjadi kesalahan saat mengekspor data: ' + error.message
+                });
+            }
+        }
+
+        // Print Results
+        async function printResults() {
+            try {
+                let results = {};
+                let users = {};
+                let exams = {};
+                let subjects = {};
+                
+                // Get filter values
+                const subjectFilter = document.getElementById('subjectFilterResults')?.value || '';
+                const examFilter = document.getElementById('examFilterResults')?.value || '';
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo data
+                    results = {
+                        'result-1': {
+                            userId: 'demo-student',
+                            examId: 'demo-exam-1',
+                            score: 85,
+                            correctAnswers: 4,
+                            totalQuestions: 5,
+                            passed: true,
+                            completedAt: Date.now() - 86400000
+                        },
+                        'result-2': {
+                            userId: 'student-2',
+                            examId: 'demo-exam-1',
+                            score: 60,
+                            correctAnswers: 3,
+                            totalQuestions: 5,
+                            passed: false,
+                            completedAt: Date.now() - 172800000
+                        },
+                        'result-3': {
+                            userId: 'student-3',
+                            examId: 'demo-exam-2',
+                            score: 90,
+                            correctAnswers: 4,
+                            totalQuestions: 4,
+                            passed: true,
+                            completedAt: Date.now() - 259200000
+                        }
+                    };
+                    
+                    users = {
+                        'demo-student': { name: 'Peserta Demo', email: 'peserta@email.com', class: '6A' },
+                        'student-2': { name: 'Ahmad Fauzi', email: 'ahmad@email.com', class: '6A' },
+                        'student-3': { name: 'Siti Aminah', email: 'siti@email.com', class: '6B' }
+                    };
+                    
+                    exams = {
+                        'demo-exam-1': { title: 'Quiz Fiqh Dasar', subjectId: 'fiqh' },
+                        'demo-exam-2': { title: 'Quiz Akidah Islam', subjectId: 'akidah' }
+                    };
+                    
+                    subjects = {
+                        'fiqh': { name: 'Fiqh', code: 'FQH' },
+                        'akidah': { name: 'Akidah', code: 'AQD' }
+                    };
+                } else if (isFirebaseConnected) {
+                    // Load from Firebase
+                    const [resultsSnapshot, usersSnapshot, examsSnapshot, subjectsSnapshot] = await Promise.all([
+                        dbRef.results().once('value'),
+                        dbRef.users().once('value'),
+                        dbRef.exams().once('value'),
+                        dbRef.subjects().once('value')
+                    ]);
+                    
+                    results = resultsSnapshot.val() || {};
+                    users = usersSnapshot.val() || {};
+                    exams = examsSnapshot.val() || {};
+                    subjects = subjectsSnapshot.val() || {};
+                }
+                
+                // Filter results
+                const filteredResults = Object.keys(results).filter(resultId => {
+                    const result = results[resultId];
+                    const exam = exams[result.examId] || {};
+                    
+                    if (subjectFilter && exam.subjectId !== subjectFilter) return false;
+                    if (examFilter && result.examId !== examFilter) return false;
+                    
+                    return true;
+                });
+                
+                if (filteredResults.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Tidak Ada Data',
+                        text: 'Tidak ada hasil ujian untuk dicetak dengan filter yang dipilih'
+                    });
+                    return;
+                }
+                
+                // Calculate statistics
+                const totalResults = filteredResults.length;
+                const passedResults = filteredResults.filter(id => results[id].passed).length;
+                const failedResults = totalResults - passedResults;
+                const averageScore = totalResults > 0 ? 
+                    Math.round(filteredResults.reduce((sum, id) => sum + results[id].score, 0) / totalResults) : 0;
+                
+                // Generate print content
+                let printContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Laporan Hasil Ujian - CBT MIN SINGKAWANG</title>
+                        <style>
+                            body { 
+                                font-family: Arial, sans-serif; 
+                                margin: 20px; 
+                                font-size: 12px;
+                                line-height: 1.4;
+                            }
+                            .header { 
+                                text-align: center; 
+                                margin-bottom: 30px; 
+                                border-bottom: 2px solid #059669;
+                                padding-bottom: 15px;
+                            }
+                            .header h1 { 
+                                margin: 0; 
+                                color: #059669; 
+                                font-size: 18px;
+                            }
+                            .header h2 { 
+                                margin: 5px 0; 
+                                color: #666; 
+                                font-size: 14px;
+                                font-weight: normal;
+                            }
+                            .info-section {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 20px;
+                            }
+                            .info-box {
+                                flex: 1;
+                                margin-right: 20px;
+                            }
+                            .info-box:last-child {
+                                margin-right: 0;
+                            }
+                            .info-box h3 {
+                                margin: 0 0 10px 0;
+                                color: #059669;
+                                font-size: 14px;
+                                border-bottom: 1px solid #ddd;
+                                padding-bottom: 5px;
+                            }
+                            .stat-item {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 5px;
+                            }
+                            table { 
+                                width: 100%; 
+                                border-collapse: collapse; 
+                                margin-top: 20px;
+                                font-size: 11px;
+                            }
+                            th, td { 
+                                border: 1px solid #ddd; 
+                                padding: 8px; 
+                                text-align: left; 
+                            }
+                            th { 
+                                background-color: #059669; 
+                                color: white; 
+                                font-weight: bold;
+                            }
+                            tr:nth-child(even) { 
+                                background-color: #f9f9f9; 
+                            }
+                            .status-lulus { 
+                                color: #059669; 
+                                font-weight: bold; 
+                            }
+                            .status-tidak-lulus { 
+                                color: #dc2626; 
+                                font-weight: bold; 
+                            }
+                            .footer {
+                                margin-top: 30px;
+                                text-align: right;
+                                font-size: 11px;
+                                color: #666;
+                            }
+                            @media print {
+                                body { margin: 0; }
+                                .header { page-break-after: avoid; }
+                                table { page-break-inside: avoid; }
+                                tr { page-break-inside: avoid; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>CBT MIN SINGKAWANG</h1>
+                            <h2>Laporan Hasil Ujian</h2>
+                            <h2>Tahun Ajaran 2025/2026 Semester 1</h2>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-box">
+                                <h3>Statistik Keseluruhan</h3>
+                                <div class="stat-item">
+                                    <span>Total Peserta:</span>
+                                    <strong>${totalResults}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Lulus:</span>
+                                    <strong class="status-lulus">${passedResults}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Tidak Lulus:</span>
+                                    <strong class="status-tidak-lulus">${failedResults}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Persentase Kelulusan:</span>
+                                    <strong>${totalResults > 0 ? Math.round((passedResults / totalResults) * 100) : 0}%</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Rata-rata Skor:</span>
+                                    <strong>${averageScore}%</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="info-box">
+                                <h3>Informasi Laporan</h3>
+                                <div class="stat-item">
+                                    <span>Tanggal Cetak:</span>
+                                    <strong>${new Date().toLocaleDateString('id-ID')}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Waktu Cetak:</span>
+                                    <strong>${new Date().toLocaleTimeString('id-ID')}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Filter Mapel:</span>
+                                    <strong>${subjectFilter ? (subjects[subjectFilter]?.name || subjectFilter) : 'Semua'}</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Filter Ujian:</span>
+                                    <strong>${examFilter ? (exams[examFilter]?.title || examFilter) : 'Semua'}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Peserta</th>
+                                    <th>Kelas</th>
+                                    <th>Ujian</th>
+                                    <th>Mata Pelajaran</th>
+                                    <th>Skor</th>
+                                    <th>Benar/Total</th>
+                                    <th>Status</th>
+                                    <th>Tanggal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                filteredResults.forEach((resultId, index) => {
+                    const result = results[resultId];
+                    const user = users[result.userId] || {};
+                    const exam = exams[result.examId] || {};
+                    const subject = subjects[exam.subjectId] || {};
+                    
+                    printContent += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${user.name || 'Unknown'}</td>
+                            <td>${user.class || '-'}</td>
+                            <td>${exam.title || 'Unknown'}</td>
+                            <td>${subject.name || 'Unknown'}</td>
+                            <td><strong>${result.score}%</strong></td>
+                            <td>${result.correctAnswers}/${result.totalQuestions}</td>
+                            <td class="${result.passed ? 'status-lulus' : 'status-tidak-lulus'}">
+                                ${result.passed ? 'Lulus' : 'Tidak Lulus'}
+                            </td>
+                            <td>${new Date(result.completedAt).toLocaleDateString('id-ID')}</td>
+                        </tr>
+                    `;
+                });
+                
+                printContent += `
+                            </tbody>
+                        </table>
+                        
+                        <div class="footer">
+                            <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+                            <p>CBT MIN SINGKAWANG - Sistem Computer Based Test</p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                // Open print window
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                
+                // Wait for content to load then print
+                printWindow.onload = function() {
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                    }, 500);
+                };
+                
+            } catch (error) {
+                console.error('Print error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Print Gagal',
+                    text: 'Terjadi kesalahan saat mencetak: ' + error.message
+                });
+            }
+        }
+
+        // Setup Results Tab Event Listeners
+        function setupResultsEventListeners() {
+            const exportResultsBtn = document.getElementById('exportResultsBtn');
+            const printResultsBtn = document.getElementById('printResultsBtn');
+            const subjectFilterResults = document.getElementById('subjectFilterResults');
+            const examFilterResults = document.getElementById('examFilterResults');
+            
+            if (exportResultsBtn) {
+                exportResultsBtn.addEventListener('click', exportResults);
+            }
+            
+            if (printResultsBtn) {
+                printResultsBtn.addEventListener('click', printResults);
+            }
+            
+            if (subjectFilterResults) {
+                subjectFilterResults.addEventListener('change', () => {
+                    loadExamsForResultsFilter();
+                    loadResults();
+                });
+            }
+            
+            if (examFilterResults) {
+                examFilterResults.addEventListener('change', loadResults);
+            }
+        }
+
+        // Load Exams for Results Filter
+        async function loadExamsForResultsFilter() {
+            const examFilterResults = document.getElementById('examFilterResults');
+            const subjectFilter = document.getElementById('subjectFilterResults')?.value || '';
+            
+            if (!examFilterResults) return;
+            
+            // Keep first option
+            const firstOption = examFilterResults.options[0];
+            examFilterResults.innerHTML = '';
+            examFilterResults.appendChild(firstOption);
+            
+            try {
+                let exams = {};
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    exams = {
+                        'demo-exam-1': { title: 'Quiz Fiqh Dasar', subjectId: 'fiqh' },
+                        'demo-exam-2': { title: 'Quiz Akidah Islam', subjectId: 'akidah' }
+                    };
+                } else if (isFirebaseConnected) {
+                    const snapshot = await dbRef.exams().once('value');
+                    exams = snapshot.val() || {};
+                }
+                
+                Object.keys(exams).forEach(examId => {
+                    const exam = exams[examId];
+                    // Filter by subject if selected
+                    if (!subjectFilter || exam.subjectId === subjectFilter) {
+                        const option = document.createElement('option');
+                        option.value = examId;
+                        option.textContent = exam.title;
+                        examFilterResults.appendChild(option);
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading exams for filter:', error);
+            }
+        }
+
         // Initialize the app
         document.addEventListener('DOMContentLoaded', () => {
             // Show welcome page by default
             hideAllPanels();
             document.getElementById('welcomePage').classList.remove('hidden');
+            
+            // Setup event listeners
+            setupResultsEventListeners();
             
             // Initialize sample data
             setTimeout(() => {
@@ -4750,5 +5335,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980fff7c17988813',t:'MTc1ODE4OTY0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981019d1032f91c9',t:'MTc1ODE5MDcyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
