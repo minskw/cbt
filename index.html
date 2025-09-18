@@ -118,8 +118,8 @@
                             </button>
                         </div>
                         <div class="text-xs sm:text-sm text-green-100 space-y-1">
-                            <p><strong>2025.09 &copy; MAHFUD SIDIK</strong></p>
-                            <p>Dibuat sepenuh ❤️ untuk kemajuan MIN Singkawang</p>
+                            <p><strong>📚 Sistem CBT Lengkap</strong></p>
+                            <p>Daftar atau login untuk mengakses sistem ujian online</p>
                         </div>
                     </div>
                 </div>
@@ -707,7 +707,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Login Berhasil!',
-                            text: `Selamat datang, ${userData ? userData.name : email}`,
+                            text: `Selamat datang, ${userData && userData.name ? userData.name : email.split('@')[0]}`,
                             timer: 2000,
                             showConfirmButton: false
                         });
@@ -974,7 +974,7 @@
             quizInterface.classList.add('hidden');
         }
 
-        function showStudentDashboard() {
+        async function showStudentDashboard() {
             hideAllPanels();
             studentDashboard.classList.remove('hidden');
             
@@ -988,8 +988,31 @@
                     studentName.textContent = 'Peserta Demo';
                     studentEmail.textContent = 'peserta@email.com';
                 } else {
-                    studentName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
-                    studentEmail.textContent = currentUser.email;
+                    // Get user data from database to show full name
+                    try {
+                        if (isFirebaseConnected) {
+                            const userSnapshot = await database.ref('users').child(currentUser.uid).once('value');
+                            const userData = userSnapshot.val();
+                            
+                            if (userData && userData.name) {
+                                studentName.textContent = userData.name;
+                                studentEmail.textContent = userData.email || currentUser.email;
+                            } else {
+                                // Fallback to email-based name if no database data
+                                studentName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+                                studentEmail.textContent = currentUser.email;
+                            }
+                        } else {
+                            // Offline mode - use email-based name
+                            studentName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+                            studentEmail.textContent = currentUser.email;
+                        }
+                    } catch (error) {
+                        console.error('Error loading user data:', error);
+                        // Fallback to email-based name
+                        studentName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+                        studentEmail.textContent = currentUser.email;
+                    }
                 }
                 
                 studentIdentity.classList.remove('hidden');
@@ -1347,7 +1370,7 @@
 
         async function loadParticipants() {
             const participantsTable = document.getElementById('participantsTable');
-            participantsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
+            participantsTable.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
 
             try {
                 let users = {};
@@ -1423,11 +1446,11 @@
                 });
 
                 if (participantsTable.children.length === 0) {
-                    participantsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada peserta terdaftar</td></tr>';
+                    participantsTable.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Belum ada peserta terdaftar</td></tr>';
                 }
             } catch (error) {
                 console.error('Error loading participants:', error);
-                participantsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data peserta</td></tr>';
+                participantsTable.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat data peserta</td></tr>';
             }
         }
 
@@ -3570,6 +3593,8 @@
                                     await dbRef.users().child(user.uid).set({
                                         name: formValues.name,
                                         email: formValues.email,
+                                        class: formValues.class,
+                                        examRoom: formValues.examRoom,
                                         role: 'student',
                                         isActive: true,
                                         createdAt: firebase.database.ServerValue.TIMESTAMP
@@ -3931,18 +3956,24 @@
                     'Nama Lengkap': 'Ahmad Fauzi',
                     'Email': 'ahmad@email.com',
                     'Password': 'password123',
+                    'Kelas': '6A',
+                    'Ruang Ujian': 'R001',
                     'Status': 'Aktif'
                 },
                 {
                     'Nama Lengkap': 'Siti Aminah',
                     'Email': 'siti@email.com',
                     'Password': 'password123',
+                    'Kelas': '6B',
+                    'Ruang Ujian': 'R002',
                     'Status': 'Aktif'
                 },
                 {
                     'Nama Lengkap': 'Muhammad Rizki',
                     'Email': 'rizki@email.com',
                     'Password': 'password123',
+                    'Kelas': '6A',
+                    'Ruang Ujian': 'R001',
                     'Status': 'Nonaktif'
                 }
             ];
@@ -3955,6 +3986,8 @@
                 { width: 20 }, // Nama Lengkap
                 { width: 25 }, // Email
                 { width: 15 }, // Password
+                { width: 10 }, // Kelas
+                { width: 15 }, // Ruang Ujian
                 { width: 10 }  // Status
             ];
             
@@ -3974,6 +4007,7 @@
             const templateData = [
                 {
                     'Tipe Soal': 'multiple_choice',
+                    'Mata Pelajaran': 'fiqh',
                     'Kategori': 'Fiqh',
                     'Pertanyaan': 'ما هو الركن الأول من أركان الإسلام؟',
                     'Gambar Pertanyaan': '',
@@ -3990,6 +4024,7 @@
                 },
                 {
                     'Tipe Soal': 'true_false',
+                    'Mata Pelajaran': 'akidah',
                     'Kategori': 'Akidah',
                     'Pertanyaan': 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
                     'Gambar Pertanyaan': '',
@@ -4006,6 +4041,7 @@
                 },
                 {
                     'Tipe Soal': 'short_answer',
+                    'Mata Pelajaran': 'akhlaq',
                     'Kategori': 'Akhlaq',
                     'Pertanyaan': 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
                     'Gambar Pertanyaan': '',
@@ -4022,6 +4058,7 @@
                 },
                 {
                     'Tipe Soal': 'essay',
+                    'Mata Pelajaran': 'sirah',
                     'Kategori': 'Sirah',
                     'Pertanyaan': 'اكتب فقرة قصيرة عن أهمية الصلاة في حياة المسلم',
                     'Gambar Pertanyaan': '',
@@ -4035,6 +4072,40 @@
                     'Gambar D': '',
                     'Jawaban Benar': 'Panduan: يجب أن تتضمن الإجابة أهمية الصلاة وفوائدها الروحية',
                     'Penjelasan': 'الصلاة عماد الدين وصلة بين العبد وربه'
+                },
+                {
+                    'Tipe Soal': 'matching',
+                    'Mata Pelajaran': 'fiqh',
+                    'Kategori': 'Fiqh',
+                    'Pertanyaan': 'جودوهكان الأركان التالية مع تعريفها الصحيح',
+                    'Gambar Pertanyaan': '',
+                    'Opsi A': 'الشهادة|الصلاة|الزكاة|الصوم',
+                    'Gambar A': '',
+                    'Opsi B': 'الإقرار بوحدانية الله|الصلة مع الله|إخراج المال للفقراء|الإمساك عن الطعام والشراب',
+                    'Gambar B': '',
+                    'Opsi C': '',
+                    'Gambar C': '',
+                    'Opsi D': '',
+                    'Gambar D': '',
+                    'Jawaban Benar': '1-1,2-2,3-3,4-4',
+                    'Penjelasan': 'كل ركن له تعريفه الخاص في الإسلام'
+                },
+                {
+                    'Tipe Soal': 'complex_multiple_choice',
+                    'Mata Pelajaran': 'akidah',
+                    'Kategori': 'Akidah',
+                    'Pertanyaan': 'أي من العبارات التالية صحيحة عن أركان الإيمان؟ (اختر أكثر من إجابة)',
+                    'Gambar Pertanyaan': '',
+                    'Opsi A': 'الإيمان بالله',
+                    'Gambar A': '',
+                    'Opsi B': 'الإيمان بالملائكة',
+                    'Gambar B': '',
+                    'Opsi C': 'الإيمان بالكتب',
+                    'Gambar C': '',
+                    'Opsi D': 'الإيمان بالرسل',
+                    'Gambar D': '',
+                    'Jawaban Benar': 'A,B,C,D',
+                    'Penjelasan': 'جميع الخيارات هي من أركان الإيمان الستة'
                 }
             ];
 
@@ -4044,6 +4115,7 @@
             // Set column widths
             worksheet['!cols'] = [
                 { width: 15 }, // Tipe Soal
+                { width: 15 }, // Mata Pelajaran
                 { width: 12 }, // Kategori
                 { width: 40 }, // Pertanyaan
                 { width: 20 }, // Gambar Pertanyaan
@@ -4064,12 +4136,13 @@
             // Add instruction sheet
             const instructions = [
                 { 'Kolom': 'Tipe Soal', 'Keterangan': 'multiple_choice, true_false, short_answer, essay, matching, complex_multiple_choice' },
-                { 'Kolom': 'Kategori', 'Keterangan': 'Fiqh, Akidah, Akhlaq, Sirah, dll' },
+                { 'Kolom': 'Mata Pelajaran', 'Keterangan': 'ID mata pelajaran: fiqh, akidah, akhlaq, sirah (sesuai dengan yang dibuat di admin)' },
+                { 'Kolom': 'Kategori', 'Keterangan': 'Fiqh, Akidah, Akhlaq, Sirah, dll (untuk pengelompokan)' },
                 { 'Kolom': 'Pertanyaan', 'Keterangan': 'Teks pertanyaan (bisa bahasa Arab)' },
                 { 'Kolom': 'Gambar Pertanyaan', 'Keterangan': 'URL gambar untuk pertanyaan (opsional)' },
-                { 'Kolom': 'Opsi A-D', 'Keterangan': 'Pilihan jawaban (untuk multiple_choice)' },
+                { 'Kolom': 'Opsi A-D', 'Keterangan': 'Pilihan jawaban (untuk multiple_choice). Untuk matching: pisahkan dengan | (pipe)' },
                 { 'Kolom': 'Gambar A-D', 'Keterangan': 'URL gambar untuk opsi (opsional)' },
-                { 'Kolom': 'Jawaban Benar', 'Keterangan': 'A/B/C/D (multiple_choice), Benar/Salah (true_false), teks jawaban (short_answer), panduan (essay)' },
+                { 'Kolom': 'Jawaban Benar', 'Keterangan': 'A/B/C/D (multiple_choice), Benar/Salah (true_false), teks (short_answer), panduan (essay), 1-1,2-2 (matching), A,B,C (complex_multiple_choice)' },
                 { 'Kolom': 'Penjelasan', 'Keterangan': 'Penjelasan jawaban untuk peserta' }
             ];
             
@@ -4109,6 +4182,8 @@
                         name: row['Nama Lengkap'].toString().trim(),
                         email: row['Email'].toString().trim().toLowerCase(),
                         password: row['Password'].toString().trim(),
+                        class: row['Kelas'] ? row['Kelas'].toString().trim() : '',
+                        examRoom: row['Ruang Ujian'] ? row['Ruang Ujian'].toString().trim() : '',
                         isActive: row['Status'] ? row['Status'].toString().toLowerCase() === 'aktif' : true
                     });
                 }
@@ -4184,6 +4259,8 @@
                                     await dbRef.users().child(userCredential.user.uid).set({
                                         name: participant.name,
                                         email: participant.email,
+                                        class: participant.class,
+                                        examRoom: participant.examRoom,
                                         role: 'student',
                                         isActive: participant.isActive,
                                         createdAt: firebase.database.ServerValue.TIMESTAMP
@@ -4200,6 +4277,8 @@
                                         const userId = Object.keys(existing)[0];
                                         await dbRef.users().child(userId).update({
                                             name: participant.name,
+                                            class: participant.class,
+                                            examRoom: participant.examRoom,
                                             isActive: participant.isActive,
                                             updatedAt: firebase.database.ServerValue.TIMESTAMP
                                         });
@@ -4275,6 +4354,10 @@
                         throw new Error(`Baris ${i + 2}: Tipe Soal dan Pertanyaan wajib diisi`);
                     }
                     
+                    if (!row['Mata Pelajaran']) {
+                        throw new Error(`Baris ${i + 2}: Mata Pelajaran wajib diisi`);
+                    }
+                    
                     const questionType = row['Tipe Soal'].toString().toLowerCase().trim();
                     const validTypes = ['multiple_choice', 'true_false', 'short_answer', 'essay', 'matching', 'complex_multiple_choice'];
                     
@@ -4284,6 +4367,7 @@
                     
                     const questionData = {
                         type: questionType,
+                        subjectId: row['Mata Pelajaran'].toString().toLowerCase().trim(),
                         category: row['Kategori'] ? row['Kategori'].toString().trim() : 'Umum',
                         question: row['Pertanyaan'].toString().trim(),
                         questionImage: row['Gambar Pertanyaan'] ? row['Gambar Pertanyaan'].toString().trim() : '',
@@ -4327,6 +4411,75 @@
                         case 'essay':
                             questionData.guideline = row['Jawaban Benar'] ? row['Jawaban Benar'].toString().trim() : '';
                             questionData.maxScore = 100;
+                            break;
+                            
+                        case 'matching':
+                            // Process matching questions
+                            const columnAText = row['Opsi A'] ? row['Opsi A'].toString().trim() : '';
+                            const columnBText = row['Opsi B'] ? row['Opsi B'].toString().trim() : '';
+                            
+                            if (!columnAText || !columnBText) {
+                                throw new Error(`Baris ${i + 2}: Opsi A dan B wajib diisi untuk soal menjodohkan`);
+                            }
+                            
+                            // Split by pipe (|) for matching items
+                            const itemsA = columnAText.split('|').map(item => item.trim()).filter(item => item);
+                            const itemsB = columnBText.split('|').map(item => item.trim()).filter(item => item);
+                            
+                            if (itemsA.length === 0 || itemsB.length === 0) {
+                                throw new Error(`Baris ${i + 2}: Format matching tidak valid. Gunakan format: item1|item2|item3`);
+                            }
+                            
+                            questionData.columnA = {};
+                            questionData.columnB = {};
+                            
+                            itemsA.forEach((item, index) => {
+                                questionData.columnA[index] = item;
+                            });
+                            
+                            itemsB.forEach((item, index) => {
+                                questionData.columnB[index] = item;
+                            });
+                            
+                            questionData.correctAnswer = row['Jawaban Benar'] ? row['Jawaban Benar'].toString().trim() : '';
+                            break;
+                            
+                        case 'complex_multiple_choice':
+                            // Process complex multiple choice (multiple correct answers)
+                            if (!row['Opsi A'] || !row['Opsi B'] || !row['Jawaban Benar']) {
+                                throw new Error(`Baris ${i + 2}: Opsi A, B dan Jawaban Benar wajib diisi untuk pilihan ganda kompleks`);
+                            }
+                            
+                            questionData.options = {};
+                            ['A', 'B', 'C', 'D'].forEach((letter, index) => {
+                                const optionText = row[`Opsi ${letter}`];
+                                if (optionText) {
+                                    questionData.options[index] = {
+                                        text: optionText.toString().trim(),
+                                        image: row[`Gambar ${letter}`] ? row[`Gambar ${letter}`].toString().trim() : ''
+                                    };
+                                }
+                            });
+                            
+                            // Parse multiple correct answers (e.g., "A,B,C" or "0,1,2")
+                            const correctAnswersText = row['Jawaban Benar'].toString().trim();
+                            let correctAnswers = [];
+                            
+                            if (correctAnswersText.includes(',')) {
+                                const answers = correctAnswersText.split(',').map(ans => ans.trim());
+                                correctAnswers = answers.map(ans => {
+                                    // Convert letter to index if needed
+                                    const letterToIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+                                    return letterToIndex[ans.toUpperCase()] !== undefined ? letterToIndex[ans.toUpperCase()] : parseInt(ans);
+                                }).filter(ans => !isNaN(ans));
+                            } else {
+                                // Single answer
+                                const letterToIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+                                const singleAns = correctAnswersText.toUpperCase();
+                                correctAnswers = [letterToIndex[singleAns] !== undefined ? letterToIndex[singleAns] : parseInt(correctAnswersText)];
+                            }
+                            
+                            questionData.correctAnswer = correctAnswers;
                             break;
                     }
                     
@@ -4597,5 +4750,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980cfdb5e3c8a24f',t:'MTc1ODE1ODExNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980fff7c17988813',t:'MTc1ODE4OTY0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
