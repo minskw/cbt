@@ -2746,20 +2746,39 @@
                         const endDateTime = new Date(endDate + 'T' + endTime);
                         const now = new Date();
                         
+                        // Allow past dates for testing purposes, but warn user
                         if (startDateTime < now) {
-                            Swal.showValidationMessage('Tanggal dan jam mulai tidak boleh di masa lalu');
-                            return false;
+                            const timeDiff = Math.floor((now - startDateTime) / (1000 * 60)); // minutes
+                            if (timeDiff > 1440) { // More than 1 day ago
+                                Swal.showValidationMessage('Tanggal mulai terlalu jauh di masa lalu. Gunakan tanggal yang lebih baru.');
+                                return false;
+                            }
                         }
                         
-                        if (endDateTime <= startDateTime) {
-                            Swal.showValidationMessage('Tanggal dan jam selesai harus setelah waktu mulai');
-                            return false;
+                        // For same date, only check time difference
+                        if (startDate === endDate) {
+                            if (startTime >= endTime) {
+                                Swal.showValidationMessage('Jam selesai harus lebih besar dari jam mulai pada hari yang sama');
+                                return false;
+                            }
+                        } else {
+                            // Different dates - end date must be after start date
+                            if (endDateTime <= startDateTime) {
+                                Swal.showValidationMessage('Tanggal dan jam selesai harus setelah waktu mulai');
+                                return false;
+                            }
                         }
                         
                         // Check if duration fits within the time window
-                        const timeWindowMinutes = (endDateTime - startDateTime) / (1000 * 60);
+                        const timeWindowMinutes = Math.floor((endDateTime - startDateTime) / (1000 * 60));
                         if (duration > timeWindowMinutes) {
-                            Swal.showValidationMessage(`Durasi ujian (${duration} menit) melebihi rentang waktu yang tersedia (${Math.floor(timeWindowMinutes)} menit)`);
+                            Swal.showValidationMessage(`Durasi ujian (${duration} menit) melebihi rentang waktu yang tersedia (${timeWindowMinutes} menit)`);
+                            return false;
+                        }
+                        
+                        // Minimum time window should be at least equal to duration
+                        if (timeWindowMinutes < duration) {
+                            Swal.showValidationMessage(`Rentang waktu (${timeWindowMinutes} menit) harus minimal sama dengan durasi ujian (${duration} menit)`);
                             return false;
                         }
                         
@@ -3758,20 +3777,39 @@
                             const endDateTime = new Date(endDate + 'T' + endTime);
                             const now = new Date();
                             
+                            // Allow past dates for testing purposes, but warn user
                             if (startDateTime < now) {
-                                Swal.showValidationMessage('Tanggal dan jam mulai tidak boleh di masa lalu');
-                                return false;
+                                const timeDiff = Math.floor((now - startDateTime) / (1000 * 60)); // minutes
+                                if (timeDiff > 1440) { // More than 1 day ago
+                                    Swal.showValidationMessage('Tanggal mulai terlalu jauh di masa lalu. Gunakan tanggal yang lebih baru.');
+                                    return false;
+                                }
                             }
                             
-                            if (endDateTime <= startDateTime) {
-                                Swal.showValidationMessage('Tanggal dan jam selesai harus setelah waktu mulai');
-                                return false;
+                            // For same date, only check time difference
+                            if (startDate === endDate) {
+                                if (startTime >= endTime) {
+                                    Swal.showValidationMessage('Jam selesai harus lebih besar dari jam mulai pada hari yang sama');
+                                    return false;
+                                }
+                            } else {
+                                // Different dates - end date must be after start date
+                                if (endDateTime <= startDateTime) {
+                                    Swal.showValidationMessage('Tanggal dan jam selesai harus setelah waktu mulai');
+                                    return false;
+                                }
                             }
                             
                             // Check if duration fits within the time window
-                            const timeWindowMinutes = (endDateTime - startDateTime) / (1000 * 60);
+                            const timeWindowMinutes = Math.floor((endDateTime - startDateTime) / (1000 * 60));
                             if (duration > timeWindowMinutes) {
-                                Swal.showValidationMessage(`Durasi ujian (${duration} menit) melebihi rentang waktu yang tersedia (${Math.floor(timeWindowMinutes)} menit)`);
+                                Swal.showValidationMessage(`Durasi ujian (${duration} menit) melebihi rentang waktu yang tersedia (${timeWindowMinutes} menit)`);
+                                return false;
+                            }
+                            
+                            // Minimum time window should be at least equal to duration
+                            if (timeWindowMinutes < duration) {
+                                Swal.showValidationMessage(`Rentang waktu (${timeWindowMinutes} menit) harus minimal sama dengan durasi ujian (${duration} menit)`);
                                 return false;
                             }
                             
@@ -4559,5 +4597,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980c9523b13bcdfd',t:'MTc1ODE1MzgzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980cf83a237ba24f',t:'MTc1ODE1Nzg4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
