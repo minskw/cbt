@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="id" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBT MIN SINGKAWANG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        .arabic-text { font-family: 'Amiri', serif; }
+        .gradient-bg { background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .quiz-card { transition: all 0.3s ease; }
+        .quiz-card:hover { transform: translateY(-5px); }
+        .islamic-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23065f46' fill-opacity='0.05'%3E%3Cpath d='M30 30c0-16.569 13.431-30 30-30v60c-16.569 0-30-13.431-30-30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* Enhanced styles for formatted text content */
+        .formatted-text {
+            line-height: 1.7;
+            word-wrap: break-word;
+        }
+        
+        .formatted-text br {
+            display: block;
+            margin: 0.4em 0;
+            content: "";
+        }
+        
+        .formatted-text p {
+            margin: 0.6em 0;
+        }
+        
+        .formatted-text ul, .formatted-text ol {
+            margin: 0.6em 0;
+            padding-left: 1.8em;
+        }
+        
+        .formatted-text li {
+            margin: 0.3em 0;
+            line-height: 1.6;
+        }
+        
+        .formatted-text strong, .formatted-text b {
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .formatted-text em, .formatted-text i {
+            font-style: italic;
+            color: #374151;
+        }
+        
+        .formatted-text u {
+            text-decoration: underline;
+            text-decoration-color: #6b7280;
+        }
+        
+        /* Special handling for Excel line breaks */
+        .excel-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Question display improvements */
+        .question-content {
+            background: #f9fafb;
+            border-left: 4px solid #059669;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        
+        .option-content {
+            padding: 0.75rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .option-content:hover {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 islamic-pattern min-h-screen">
+    <!-- Navigation -->
+    <nav class="gradient-bg shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-10 w-10 sm:h-12 sm:w-12 mr-3 sm:mr-4 rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <i class="fas fa-mosque text-white text-xl sm:text-2xl mr-3 sm:mr-4 hidden"></i>
+                    <div class="text-white">
+                        <div class="text-lg sm:text-xl font-bold">CBT MIN SINGKAWANG</div>
+                        <div class="text-xs sm:text-sm text-green-100">Penilaian Sumatif Akhir Semester</div>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="loginBtn" class="text-white hover:text-green-200 px-2 sm:px-3 py-2 rounded-md text-sm">
+                        <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i><span class="hidden sm:inline">Login</span>
+                    </button>
+                    <button id="logoutBtn" class="text-white hover:text-green-200 px-2 sm:px-3 py-2 rounded-md text-sm hidden">
+                        <i class="fas fa-sign-out-alt mr-1 sm:mr-2"></i><span class="hidden sm:inline">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Status Bar -->
+    <div class="bg-green-50 border-b border-green-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 space-y-2 sm:space-y-0">
+                <div id="studentIdentity" class="hidden text-sm text-gray-700">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-circle text-green-600 mr-2"></i>
+                        <span id="studentName" class="font-medium"></span>
+                        <span class="mx-2 text-gray-400">•</span>
+                        <span id="studentEmail" class="text-gray-600"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <div id="connectionStatus" class="text-xs text-gray-600 hidden">
+                        <i class="fas fa-circle text-green-500 mr-1"></i>Database Connected
+                    </div>
+                    <button id="adminBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm hidden self-start sm:self-auto">
+                        <i class="fas fa-cog mr-2"></i>Admin Panel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Page -->
+        <div id="welcomePage">
+            <div class="text-center mb-8 sm:mb-12">
+                <div class="mb-6 sm:mb-8">
+                    <img src="https://archive.org/download/logo-min-singkawang/logo%20min%20singkawang.jpg" alt="Logo MIN Singkawang" class="h-16 w-16 sm:h-24 sm:w-24 mx-auto mb-4 sm:mb-6 rounded-full shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="fas fa-mosque text-green-600 text-4xl sm:text-6xl mb-4 sm:mb-6 hidden"></i>
+                    <h1 class="text-2xl sm:text-3xl lg:text-5xl font-bold text-gray-800 mb-2 sm:mb-3 px-4">CBT MIN SINGKAWANG</h1>
+                    <p class="text-lg sm:text-xl lg:text-2xl text-gray-700 mb-1 sm:mb-2 font-semibold px-4">Penilaian Sumatif Akhir Semester</p>
+                    <p class="text-sm sm:text-base lg:text-lg text-gray-600 px-4">Tahun Ajaran 2025/2026 Semester 1</p>
+                </div>
+                
+                <div class="max-w-6xl mx-auto">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 px-4">
+                        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
+                            <i class="fas fa-book-open text-green-600 text-2xl sm:text-3xl mb-3 sm:mb-4"></i>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">6 Tipe Soal</h3>
+                            <p class="text-sm sm:text-base text-gray-600">Pilihan Ganda, Menjodohkan, Benar-Salah, Isian, Esai, dan PG Kompleks</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
+                            <i class="fas fa-users text-green-600 text-2xl sm:text-3xl mb-3 sm:mb-4"></i>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Panel Admin</h3>
+                            <p class="text-sm sm:text-base text-gray-600">Kelola peserta, ujian, soal, dan hasil secara lengkap</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center sm:col-span-2 lg:col-span-1">
+                            <i class="fas fa-graduation-cap text-green-600 text-2xl sm:text-3xl mb-3 sm:mb-4"></i>
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Multi Mata Pelajaran</h3>
+                            <p class="text-sm sm:text-base text-gray-600">Sistem ujian berdasarkan mata pelajaran dengan bank soal terorganisir</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-6 sm:p-8 text-white text-center mx-4">
+                        <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Mulai Pengalaman Quiz Islami Anda</h2>
+                        <p class="text-green-100 mb-4 sm:mb-6 text-sm sm:text-base">Login untuk mengakses quiz atau panel admin</p>
+                        <div class="mb-4 sm:mb-6">
+                            <button onclick="document.getElementById('loginModal').classList.remove('hidden')" class="bg-white text-green-600 hover:bg-gray-100 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition duration-200 text-sm sm:text-base w-full sm:w-auto">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login Sekarang
+                            </button>
+                        </div>
+                        <div class="text-xs sm:text-sm text-green-100 space-y-1">
+                            <p><strong>📚 Sistem CBT Lengkap</strong></p>
+                            <p>Daftar atau login untuk mengakses sistem ujian online</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-4 sm:p-6">
+                    <div class="text-center mb-4 sm:mb-6">
+                        <i class="fas fa-user-circle text-green-600 text-3xl sm:text-4xl mb-2"></i>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Login</h2>
+                    </div>
+                    <form id="loginForm">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                            <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" required>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                            <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base" required>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between space-y-2 sm:space-y-0">
+                            <button type="button" id="closeLoginModal" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base">Batal</button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md text-sm sm:text-base">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Dashboard -->
+        <div id="studentDashboard" class="hidden">
+            <div class="text-center mb-6 sm:mb-8">
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-2 px-4">CBT MIN SINGKAWANG</h1>
+                <p class="text-lg sm:text-xl text-gray-700 mb-1 font-semibold px-4">Penilaian Sumatif Akhir Semester</p>
+                <p class="text-gray-600 text-sm sm:text-base lg:text-lg px-4">Tahun Ajaran 2025/2026 Semester 1</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="quizList">
+                <!-- Quiz cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Quiz Taking Interface -->
+        <div id="quizInterface" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="quizTitle" class="text-2xl font-bold text-gray-800"></h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
+                        </div>
+                        <div id="timer" class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span id="timeLeft">30:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="questionContent" class="mb-6">
+                    <!-- Question will be populated here -->
+                </div>
+
+                <div class="flex justify-between">
+                    <button id="prevBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left mr-2"></i>Sebelumnya
+                    </button>
+                    <button id="nextBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                        Selanjutnya<i class="fas fa-chevron-right ml-2"></i>
+                    </button>
+                    <button id="submitQuizBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md hidden">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="border-b border-gray-200">
+                    <nav class="flex overflow-x-auto px-4 sm:px-6">
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-green-500 text-green-600 font-medium whitespace-nowrap text-sm sm:text-base" data-tab="participants">
+                            <i class="fas fa-users mr-1 sm:mr-2"></i><span class="hidden sm:inline">Peserta</span><span class="sm:hidden">User</span>
+                        </button>
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="subjects">
+                            <i class="fas fa-book mr-1 sm:mr-2"></i><span class="hidden sm:inline">Mata Pelajaran</span><span class="sm:hidden">Mapel</span>
+                        </button>
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="questions">
+                            <i class="fas fa-question-circle mr-1 sm:mr-2"></i>Soal
+                        </button>
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="exams">
+                            <i class="fas fa-clipboard-list mr-1 sm:mr-2"></i>Ujian
+                        </button>
+                        <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="results">
+                            <i class="fas fa-chart-bar mr-1 sm:mr-2"></i>Hasil
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="p-4 sm:p-6">
+                    <!-- Participants Tab -->
+                    <div id="participantsTab" class="admin-content">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800">Manajemen Peserta</h3>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <button id="downloadParticipantTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-download mr-1 sm:mr-2"></i><span class="hidden sm:inline">Template Excel</span><span class="sm:hidden">Template</span>
+                                </button>
+                                <button id="importParticipantsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-upload mr-1 sm:mr-2"></i><span class="hidden sm:inline">Import Excel</span><span class="sm:hidden">Import</span>
+                                </button>
+                                <button id="addParticipantBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-plus mr-1 sm:mr-2"></i><span class="hidden sm:inline">Tambah Peserta</span><span class="sm:hidden">Tambah</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="participantsTable" class="divide-y divide-gray-200">
+                                    <!-- Participants will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Questions Tab -->
+                    <div id="questionsTab" class="admin-content hidden">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800">Bank Soal</h3>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <select id="subjectFilterQuestions" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">Semua Mata Pelajaran</option>
+                                </select>
+                                <button id="downloadQuestionTemplateBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-download mr-1 sm:mr-2"></i><span class="hidden sm:inline">Template Excel</span><span class="sm:hidden">Template</span>
+                                </button>
+                                <button id="importQuestionsBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-upload mr-1 sm:mr-2"></i><span class="hidden sm:inline">Import Excel</span><span class="sm:hidden">Import</span>
+                                </button>
+                                <button id="addQuestionBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md text-sm">
+                                    <i class="fas fa-plus mr-1 sm:mr-2"></i><span class="hidden sm:inline">Tambah Soal</span><span class="sm:hidden">Tambah</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-3 sm:space-y-4" id="questionsList">
+                            <!-- Questions will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Other tabs content would continue here -->
+                    <div id="subjectsTab" class="admin-content hidden">
+                        <h3 class="text-lg font-bold mb-4">Mata Pelajaran</h3>
+                        <p class="text-gray-600">Fitur mata pelajaran akan ditambahkan di sini.</p>
+                    </div>
+
+                    <div id="examsTab" class="admin-content hidden">
+                        <h3 class="text-lg font-bold mb-4">Ujian</h3>
+                        <p class="text-gray-600">Fitur ujian akan ditambahkan di sini.</p>
+                    </div>
+
+                    <div id="resultsTab" class="admin-content hidden">
+                        <h3 class="text-lg font-bold mb-4">Hasil</h3>
+                        <p class="text-gray-600">Fitur hasil akan ditambahkan di sini.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
+            authDomain: "jual-beli-d9d80.firebaseapp.com",
+            databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "jual-beli-d9d80",
+            storageBucket: "jual-beli-d9d80.firebasestorage.app",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:624adcdbffb699850d7262"
+        };
+
+        // Initialize Firebase
+        let database, auth, isFirebaseConnected = false;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            auth = firebase.auth();
+            
+            database.ref('.info/connected').on('value', (snapshot) => {
+                isFirebaseConnected = snapshot.val() === true;
+                const connectionStatus = document.getElementById('connectionStatus');
+                
+                if (connectionStatus) {
+                    if (isFirebaseConnected) {
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-green-400 mr-1"></i>Database Connected';
+                        connectionStatus.classList.remove('hidden');
+                    } else {
+                        connectionStatus.innerHTML = '<i class="fas fa-circle text-red-400 mr-1"></i>Database Offline';
+                        connectionStatus.classList.remove('hidden');
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            isFirebaseConnected = false;
+        }
+
+        // Global Variables
+        let currentUser = null;
+        let currentQuiz = null;
+        let currentQuestionIndex = 0;
+        let quizAnswers = {};
+        let quizTimer = null;
+        let timeLeft = 0;
+        let currentQuestions = [];
+
+        // Enhanced function to convert Excel line breaks and HTML tags
+        function formatTextContent(text) {
+            if (!text) return '';
+            
+            let formattedText = text.toString();
+            
+            // Handle different types of line breaks from Excel and other sources
+            // Excel Alt+Enter creates \n, copy-paste might create \r\n or just \n
+            formattedText = formattedText.replace(/\r\n/g, '\n'); // Normalize Windows line endings
+            formattedText = formattedText.replace(/\r/g, '\n');   // Normalize Mac line endings
+            
+            // Convert line breaks to HTML breaks, but preserve existing HTML structure
+            formattedText = formattedText.replace(/\n/g, '<br>');
+            
+            // Handle multiple consecutive line breaks (more than 2 becomes paragraph break)
+            formattedText = formattedText.replace(/(<br\s*\/?>){3,}/gi, '</p><p>');
+            
+            // Wrap in paragraph if it contains paragraph breaks
+            if (formattedText.includes('</p><p>')) {
+                formattedText = '<p>' + formattedText + '</p>';
+            }
+            
+            // Clean up dangerous HTML but preserve basic formatting tags
+            const allowedTags = ['b', 'strong', 'i', 'em', 'u', 'br', 'p', 'span', 'div'];
+            formattedText = formattedText.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+            formattedText = formattedText.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+            formattedText = formattedText.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+            formattedText = formattedText.replace(/javascript:/gi, '');
+            
+            // Ensure proper spacing around breaks
+            formattedText = formattedText.replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '<br><br>');
+            
+            return formattedText;
+        }
+
+        // Function to safely render formatted text in DOM with enhanced line break handling
+        function renderFormattedText(element, text) {
+            if (!element) return;
+            
+            const formattedText = formatTextContent(text);
+            element.innerHTML = formattedText;
+            element.classList.add('formatted-text');
+            
+            // Add special handling for Arabic text
+            if (/[\u0600-\u06FF]/.test(text)) {
+                element.classList.add('arabic-text');
+            }
+        }
+
+        // Function specifically for handling Excel imported text with preserved formatting
+        function formatExcelText(text) {
+            if (!text) return '';
+            
+            let formattedText = text.toString();
+            
+            // Excel specific handling - Alt+Enter in Excel creates actual line breaks
+            // When imported via XLSX library, these become \n characters
+            formattedText = formattedText.replace(/\n/g, '<br>\n');
+            
+            // Handle Excel's double quotes and special characters
+            formattedText = formattedText.replace(/"/g, '"');
+            formattedText = formattedText.replace(/'/g, "'");
+            
+            // Preserve Excel formatting while making it HTML safe
+            return formatTextContent(formattedText);
+        }
+
+        // DOM Elements
+        const loginBtn = document.getElementById('loginBtn');
+        const adminBtn = document.getElementById('adminBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginModal = document.getElementById('loginModal');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        const loginForm = document.getElementById('loginForm');
+        const studentDashboard = document.getElementById('studentDashboard');
+        const adminPanel = document.getElementById('adminPanel');
+        const quizInterface = document.getElementById('quizInterface');
+
+        // Event Listeners
+        loginBtn.addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+
+        closeLoginModal.addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+        });
+
+        loginModal.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.classList.add('hidden');
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Gagal',
+                    text: 'Email dan password harus diisi'
+                });
+                return;
+            }
+
+            // Demo login for testing
+            if (email === 'admin@demo.com' && password === 'admin123') {
+                currentUser = { uid: 'demo-admin', email: email };
+                loginModal.classList.add('hidden');
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                adminBtn.classList.remove('hidden');
+                showAdminPanel();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Berhasil!',
+                    text: 'Selamat datang, Admin Demo',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            if (email === 'student@demo.com' && password === 'student123') {
+                currentUser = { uid: 'demo-student', email: email };
+                loginModal.classList.add('hidden');
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                showStudentDashboard();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Berhasil!',
+                    text: 'Selamat datang, Peserta Demo',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            // Try Firebase authentication
+            if (isFirebaseConnected) {
+                try {
+                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    currentUser = userCredential.user;
+                    
+                    loginModal.classList.add('hidden');
+                    loginBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+
+                    // Check if admin
+                    const userSnapshot = await database.ref('users').child(currentUser.uid).once('value');
+                    const userData = userSnapshot.val();
+                    
+                    if (userData && userData.role === 'admin') {
+                        adminBtn.classList.remove('hidden');
+                        showAdminPanel();
+                    } else {
+                        showStudentDashboard();
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login Berhasil!',
+                        text: `Selamat datang, ${userData?.name || email.split('@')[0]}`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login Gagal',
+                        text: 'Email atau password salah'
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Database Offline',
+                    text: 'Gunakan akun demo: admin@demo.com / admin123 atau student@demo.com / student123'
+                });
+            }
+
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+        });
+
+        adminBtn.addEventListener('click', showAdminPanel);
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                if (currentUser && !currentUser.uid.startsWith('demo-')) {
+                    await auth.signOut();
+                }
+                
+                currentUser = null;
+                
+                loginBtn.classList.remove('hidden');
+                adminBtn.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                
+                hideAllPanels();
+                document.getElementById('welcomePage').classList.remove('hidden');
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Logout Berhasil',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        // Admin Tab Navigation
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const tabName = e.target.closest('.admin-tab').dataset.tab;
+                switchAdminTab(tabName);
+            });
+        });
+
+        // Functions
+        function hideAllPanels() {
+            document.getElementById('welcomePage').classList.add('hidden');
+            studentDashboard.classList.add('hidden');
+            adminPanel.classList.add('hidden');
+            quizInterface.classList.add('hidden');
+        }
+
+        async function showStudentDashboard() {
+            hideAllPanels();
+            studentDashboard.classList.remove('hidden');
+            
+            if (currentUser) {
+                const studentIdentity = document.getElementById('studentIdentity');
+                const studentName = document.getElementById('studentName');
+                const studentEmail = document.getElementById('studentEmail');
+                
+                if (currentUser.uid === 'demo-student') {
+                    studentName.textContent = 'Peserta Demo';
+                    studentEmail.textContent = 'student@demo.com';
+                } else {
+                    studentName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+                    studentEmail.textContent = currentUser.email;
+                }
+                
+                studentIdentity.classList.remove('hidden');
+            }
+            
+            loadQuizzesForStudent();
+        }
+
+        function showAdminPanel() {
+            hideAllPanels();
+            adminPanel.classList.remove('hidden');
+            switchAdminTab('participants');
+        }
+
+        function switchAdminTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('border-green-500', 'text-green-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-green-500', 'text-green-600');
+
+            // Show/hide content
+            document.querySelectorAll('.admin-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.getElementById(`${tabName}Tab`).classList.remove('hidden');
+
+            // Load data for the tab
+            switch(tabName) {
+                case 'participants':
+                    loadParticipants();
+                    break;
+                case 'questions':
+                    loadQuestions();
+                    break;
+            }
+        }
+
+        async function loadQuizzesForStudent() {
+            const quizList = document.getElementById('quizList');
+            quizList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Memuat quiz...</p></div>';
+
+            // Demo data for testing
+            const demoQuizzes = {
+                'demo-quiz-1': {
+                    title: 'Quiz Fiqh Dasar',
+                    description: 'Ujian tentang dasar-dasar fiqh dalam Islam\nMeliputi: Thaharah, Shalat, dan Zakat\n\n<b>Petunjuk:</b>\n• Baca soal dengan teliti\n• Pilih jawaban yang paling tepat',
+                    duration: 30,
+                    totalQuestions: 3,
+                    passingScore: 70,
+                    isActive: true
+                },
+                'demo-quiz-2': {
+                    title: 'Quiz Akidah Islam',
+                    description: 'Ujian tentang akidah dan keimanan dalam Islam\n\n<i>Materi yang diujikan:</i>\n1. Rukun Iman\n2. Asmaul Husna\n3. Sifat-sifat Allah',
+                    duration: 25,
+                    totalQuestions: 2,
+                    passingScore: 75,
+                    isActive: true
+                }
+            };
+
+            quizList.innerHTML = '';
+            
+            Object.keys(demoQuizzes).forEach(quizId => {
+                const quiz = demoQuizzes[quizId];
+                if (quiz.isActive) {
+                    const quizCard = document.createElement('div');
+                    quizCard.className = 'bg-white rounded-lg shadow-lg p-6 quiz-card card-shadow';
+                    quizCard.innerHTML = `
+                        <div class="text-center mb-4">
+                            <i class="fas fa-clipboard-list text-green-600 text-3xl mb-2"></i>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">${quiz.title}</h3>
+                            <div class="text-gray-600 mb-4 formatted-text" id="quiz-desc-${quizId}"></div>
+                        </div>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Durasi:</span>
+                                <span class="font-medium">${quiz.duration} menit</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Jumlah Soal:</span>
+                                <span class="font-medium">${quiz.totalQuestions} soal</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Nilai Lulus:</span>
+                                <span class="font-medium">${quiz.passingScore}%</span>
+                            </div>
+                        </div>
+                        <button onclick="startQuiz('${quizId}')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200">
+                            <i class="fas fa-play mr-2"></i>Mulai Quiz
+                        </button>
+                    `;
+                    quizList.appendChild(quizCard);
+                    
+                    // Render formatted description
+                    const descElement = document.getElementById(`quiz-desc-${quizId}`);
+                    renderFormattedText(descElement, quiz.description);
+                }
+            });
+        }
+
+        async function loadParticipants() {
+            const participantsTable = document.getElementById('participantsTable');
+            participantsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
+
+            // Demo data
+            const demoUsers = {
+                'demo-student': {
+                    name: 'Peserta Demo',
+                    email: 'student@demo.com',
+                    role: 'student',
+                    isActive: true
+                },
+                'student-2': {
+                    name: 'Ahmad Fauzi',
+                    email: 'ahmad@email.com',
+                    role: 'student',
+                    isActive: true
+                },
+                'student-3': {
+                    name: 'Siti Aminah',
+                    email: 'siti@email.com',
+                    role: 'student',
+                    isActive: false
+                }
+            };
+            
+            participantsTable.innerHTML = '';
+            
+            Object.keys(demoUsers).forEach(userId => {
+                const user = demoUsers[userId];
+                if (user.role === 'student') {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.email}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${user.isActive ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            <button class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash mr-1"></i>Hapus
+                            </button>
+                        </td>
+                    `;
+                    participantsTable.appendChild(row);
+                }
+            });
+        }
+
+        async function loadQuestions() {
+            const questionsList = document.getElementById('questionsList');
+            questionsList.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Memuat soal...</p></div>';
+
+            // Demo questions with enhanced formatting
+            const demoQuestions = {
+                'demo-q1': {
+                    type: 'multiple_choice',
+                    category: 'Fiqh',
+                    question: 'ما هو الركن الأول من أركان الإسلام؟\n\n<b>Petunjuk:</b> Pilih jawaban yang paling tepat\n\n<i>What is the first pillar of Islam?</i>',
+                    explanation: 'الشهادة هي الركن الأول من أركان الإسلام\n\nSyahadat adalah rukun Islam yang pertama dan paling fundamental.\n\n<u>Penjelasan lengkap:</u>\nSyahadat terdiri dari dua kalimat:\n• لا إله إلا الله (Tidak ada Tuhan selain Allah)\n• محمد رسول الله (Muhammad adalah utusan Allah)'
+                },
+                'demo-q2': {
+                    type: 'true_false',
+                    category: 'Akidah',
+                    question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية\n\n<i>Iman kepada Allah SWT adalah dasar akidah Islam</i>\n\n<b>Pernyataan ini benar atau salah?</b>',
+                    explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية\n\nIman kepada Allah adalah fondasi utama dalam akidah Islam.\n\n<strong>Dalil:</strong>\n"وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ"\n<i>"Dan Aku tidak menciptakan jin dan manusia melainkan supaya mereka beribadah kepada-Ku"</i> (QS. Adz-Dzariyat: 56)'
+                },
+                'demo-q3': {
+                    type: 'short_answer',
+                    category: 'Akhlaq',
+                    question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟\n\n<u>Sebutkan satu sifat terpenting yang harus dimiliki seorang Muslim!</u>\n\n<b>Jawaban dalam bahasa Arab atau Indonesia</b>',
+                    explanation: 'الصدق من أهم الصفات الإسلامية\n\nKejujuran (ash-shidq) adalah salah satu akhlak terpenting dalam Islam.\n\n<i>Contoh jawaban yang benar:</i>\n• الصدق (Kejujuran)\n• الأمانة (Amanah)\n• التقوى (Takwa)\n• الصبر (Sabar)'
+                }
+            };
+            
+            questionsList.innerHTML = '';
+            
+            Object.keys(demoQuestions).forEach(questionId => {
+                const question = demoQuestions[questionId];
+                
+                const questionCard = document.createElement('div');
+                questionCard.className = 'bg-white border border-gray-200 rounded-lg p-4';
+                questionCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2 flex-wrap">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 mr-2 mb-1">
+                                    ${getQuestionTypeLabel(question.type)}
+                                </span>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 mr-2 mb-1">
+                                    ${question.category}
+                                </span>
+                            </div>
+                            <div class="text-gray-800 arabic-text mb-2 question-content" id="question-text-${questionId}"></div>
+                            <div class="text-sm text-gray-600" id="question-explanation-${questionId}"></div>
+                        </div>
+                        <div class="flex space-x-2 ml-4">
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                questionsList.appendChild(questionCard);
+                
+                // Render formatted question text
+                const questionElement = document.getElementById(`question-text-${questionId}`);
+                renderFormattedText(questionElement, question.question);
+                
+                // Render formatted explanation
+                if (question.explanation) {
+                    const explanationElement = document.getElementById(`question-explanation-${questionId}`);
+                    explanationElement.innerHTML = '<strong>Penjelasan:</strong> ';
+                    const explanationContent = document.createElement('span');
+                    renderFormattedText(explanationContent, question.explanation);
+                    explanationElement.appendChild(explanationContent);
+                }
+            });
+        }
+
+        function getQuestionTypeLabel(type) {
+            const labels = {
+                'multiple_choice': 'Pilihan Ganda',
+                'complex_multiple_choice': 'PG Kompleks',
+                'matching': 'Menjodohkan',
+                'true_false': 'Benar-Salah',
+                'short_answer': 'Isian Singkat',
+                'essay': 'Esai'
+            };
+            return labels[type] || type;
+        }
+
+        // Quiz functions
+        function startQuiz(quizId) {
+            Swal.fire({
+                title: 'Mulai Quiz?',
+                text: 'Pastikan Anda siap untuk memulai quiz ini.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Mulai!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Load quiz questions and start
+                    loadQuizQuestions(quizId);
+                }
+            });
+        }
+
+        function loadQuizQuestions(quizId) {
+            // Demo questions for the quiz
+            const demoQuizQuestions = {
+                'demo-quiz-1': [
+                    {
+                        type: 'multiple_choice',
+                        question: 'ما هو الركن الأول من أركان الإسلام؟\n\n<b>What is the first pillar of Islam?</b>',
+                        options: ['الصلاة (Shalat)', 'الشهادة (Syahadat)', 'الزكاة (Zakat)', 'الصوم (Puasa)'],
+                        correctAnswer: 1
+                    },
+                    {
+                        type: 'true_false',
+                        question: 'الوضوء شرط من شروط صحة الصلاة\n\n<i>Wudhu adalah syarat sahnya shalat</i>',
+                        correctAnswer: true
+                    },
+                    {
+                        type: 'short_answer',
+                        question: 'كم عدد الصلوات المفروضة في اليوم؟\n\n<u>Berapa jumlah shalat wajib dalam sehari?</u>',
+                        correctAnswer: '5'
+                    }
+                ],
+                'demo-quiz-2': [
+                    {
+                        type: 'multiple_choice',
+                        question: 'كم عدد أركان الإيمان؟\n\n<b>Berapa jumlah rukun iman?</b>',
+                        options: ['4', '5', '6', '7'],
+                        correctAnswer: 2
+                    },
+                    {
+                        type: 'true_false',
+                        question: 'الإيمان بالقدر خيره وشره من أركان الإيمان\n\n<i>Iman kepada takdir baik dan buruk termasuk rukun iman</i>',
+                        correctAnswer: true
+                    }
+                ]
+            };
+
+            currentQuestions = demoQuizQuestions[quizId] || [];
+            currentQuestionIndex = 0;
+            quizAnswers = {};
+            
+            if (currentQuestions.length > 0) {
+                hideAllPanels();
+                quizInterface.classList.remove('hidden');
+                
+                // Set quiz title
+                document.getElementById('quizTitle').textContent = quizId === 'demo-quiz-1' ? 'Quiz Fiqh Dasar' : 'Quiz Akidah Islam';
+                document.getElementById('totalQuestions').textContent = currentQuestions.length;
+                
+                // Start timer (demo: 30 minutes)
+                timeLeft = 30 * 60; // 30 minutes in seconds
+                startQuizTimer();
+                
+                displayQuestion();
+            }
+        }
+
+        function displayQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            const questionContent = document.getElementById('questionContent');
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            
+            let questionHTML = `
+                <div class="question-content">
+                    <div class="arabic-text text-lg mb-4" id="current-question-text"></div>
+                </div>
+            `;
+            
+            if (question.type === 'multiple_choice') {
+                questionHTML += '<div class="space-y-3">';
+                question.options.forEach((option, index) => {
+                    const isSelected = quizAnswers[currentQuestionIndex] === index;
+                    questionHTML += `
+                        <div class="option-content ${isSelected ? 'bg-green-50 border-green-300' : ''}">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="answer" value="${index}" ${isSelected ? 'checked' : ''} 
+                                       onchange="saveAnswer(${index})" class="mr-3">
+                                <span class="formatted-text">${formatTextContent(option)}</span>
+                            </label>
+                        </div>
+                    `;
+                });
+                questionHTML += '</div>';
+            } else if (question.type === 'true_false') {
+                const selectedAnswer = quizAnswers[currentQuestionIndex];
+                questionHTML += `
+                    <div class="space-y-3">
+                        <div class="option-content ${selectedAnswer === true ? 'bg-green-50 border-green-300' : ''}">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="answer" value="true" ${selectedAnswer === true ? 'checked' : ''} 
+                                       onchange="saveAnswer(true)" class="mr-3">
+                                <span>Benar / صحيح</span>
+                            </label>
+                        </div>
+                        <div class="option-content ${selectedAnswer === false ? 'bg-green-50 border-green-300' : ''}">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="answer" value="false" ${selectedAnswer === false ? 'checked' : ''} 
+                                       onchange="saveAnswer(false)" class="mr-3">
+                                <span>Salah / خطأ</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else if (question.type === 'short_answer') {
+                questionHTML += `
+                    <div class="mt-4">
+                        <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 arabic-text" 
+                                  rows="3" placeholder="Tulis jawaban Anda di sini..." 
+                                  onchange="saveAnswer(this.value)">${quizAnswers[currentQuestionIndex] || ''}</textarea>
+                    </div>
+                `;
+            }
+            
+            questionContent.innerHTML = questionHTML;
+            
+            // Render formatted question text
+            const questionTextElement = document.getElementById('current-question-text');
+            renderFormattedText(questionTextElement, question.question);
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === currentQuestions.length - 1) {
+                document.getElementById('nextBtn').classList.add('hidden');
+                document.getElementById('submitQuizBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('nextBtn').classList.remove('hidden');
+                document.getElementById('submitQuizBtn').classList.add('hidden');
+            }
+        }
+
+        function saveAnswer(answer) {
+            quizAnswers[currentQuestionIndex] = answer;
+        }
+
+        function startQuizTimer() {
+            quizTimer = setInterval(() => {
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timeLeft').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(quizTimer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        // Navigation functions
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        });
+
+        document.getElementById('submitQuizBtn').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Submit Quiz?',
+                text: 'Pastikan semua jawaban sudah benar. Anda tidak dapat mengubah jawaban setelah submit.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Submit!',
+                cancelButtonText: 'Periksa Lagi'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitQuiz();
+                }
+            });
+        });
+
+        function submitQuiz() {
+            clearInterval(quizTimer);
+            
+            // Calculate score
+            let correctAnswers = 0;
+            currentQuestions.forEach((question, index) => {
+                const userAnswer = quizAnswers[index];
+                if (question.type === 'multiple_choice' && userAnswer === question.correctAnswer) {
+                    correctAnswers++;
+                } else if (question.type === 'true_false' && userAnswer === question.correctAnswer) {
+                    correctAnswers++;
+                } else if (question.type === 'short_answer') {
+                    // Simple check for short answer (case insensitive)
+                    const correctAnswer = question.correctAnswer.toString().toLowerCase();
+                    const userAnswerStr = (userAnswer || '').toString().toLowerCase().trim();
+                    if (userAnswerStr === correctAnswer || userAnswerStr === correctAnswer + ' خمس' || userAnswerStr === 'lima') {
+                        correctAnswers++;
+                    }
+                }
+            });
+            
+            const score = Math.round((correctAnswers / currentQuestions.length) * 100);
+            const passed = score >= 70; // Assuming 70% is passing score
+            
+            // Show results
+            Swal.fire({
+                title: passed ? 'Selamat!' : 'Belum Berhasil',
+                html: `
+                    <div class="text-center">
+                        <div class="text-4xl mb-4">${passed ? '🎉' : '📚'}</div>
+                        <p class="text-lg mb-2">Skor Anda: <strong>${score}%</strong></p>
+                        <p class="text-sm text-gray-600">Jawaban benar: ${correctAnswers} dari ${currentQuestions.length} soal</p>
+                        <p class="text-sm mt-2 ${passed ? 'text-green-600' : 'text-red-600'}">
+                            ${passed ? 'Anda LULUS! Alhamdulillah.' : 'Anda belum lulus. Belajar lagi ya!'}
+                        </p>
+                    </div>
+                `,
+                icon: passed ? 'success' : 'info',
+                confirmButtonText: 'Kembali ke Dashboard',
+                confirmButtonColor: '#059669'
+            }).then(() => {
+                showStudentDashboard();
+            });
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show welcome page by default
+            hideAllPanels();
+            document.getElementById('welcomePage').classList.remove('hidden');
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98163dbcb621ce6d',t:'MTc1ODI1NTEwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
