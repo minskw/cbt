@@ -208,6 +208,9 @@
                 <!-- Admin Navigation -->
                 <div class="border-b border-gray-200">
                     <nav class="flex overflow-x-auto px-4 sm:px-6">
+					<button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm sm:text-base" data-tab="dashboard">
+						<i class="fas fa-tachometer-alt mr-1 sm:mr-2"></i>Dashboard
+					</button>
                         <button class="admin-tab py-3 sm:py-4 px-2 sm:px-4 border-b-2 border-green-500 text-green-600 font-medium whitespace-nowrap text-sm sm:text-base" data-tab="participants">
                             <i class="fas fa-users mr-1 sm:mr-2"></i><span class="hidden sm:inline">Peserta</span><span class="sm:hidden">User</span>
                         </button>
@@ -228,6 +231,57 @@
 
                 <!-- Admin Content -->
                 <div class="p-4 sm:p-6">
+				<!-- Dashboard Tab -->
+<div id="dashboardTab" class="admin-content hidden">
+    <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-6">Dashboard Admin</h3>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+        <div class="bg-blue-50 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-users text-blue-600 text-2xl mr-3"></i>
+                <div>
+                    <p class="text-sm text-gray-600">Total Peserta</p>
+                    <p class="text-xl font-bold text-blue-700" id="dashboardTotalParticipants">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-book text-green-600 text-2xl mr-3"></i>
+                <div>
+                    <p class="text-sm text-gray-600">Total Mata Pelajaran</p>
+                    <p class="text-xl font-bold text-green-700" id="dashboardTotalSubjects">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-yellow-50 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-question-circle text-yellow-600 text-2xl mr-3"></i>
+                <div>
+                    <p class="text-sm text-gray-600">Total Soal</p>
+                    <p class="text-xl font-bold text-yellow-700" id="dashboardTotalQuestions">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-red-50 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-clipboard-list text-red-600 text-2xl mr-3"></i>
+                <div>
+                    <p class="text-sm text-gray-600">Total Ujian</p>
+                    <p class="text-xl font-bold text-red-700" id="dashboardTotalExams">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <h4 class="text-lg font-semibold mb-4">Aktivitas Terakhir</h4>
+        <ul id="dashboardRecentActivity" class="space-y-2 text-sm text-gray-700">
+            <li>Tidak ada aktivitas terbaru.</li>
+        </ul>
+    </div>
+</div>
+
                     <!-- Participants Tab -->
                     <div id="participantsTab" class="admin-content">
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
@@ -1077,6 +1131,9 @@
                     loadResults();
                     loadSubjectsForDropdown();
                     break;
+				case 'dashboard':
+					loadDashboard();
+					break;
             }
         }
 
@@ -1372,6 +1429,42 @@
                 quizList.innerHTML = '<div class="col-span-full text-center py-8"><i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i><p class="text-red-500">Gagal memuat quiz</p></div>';
             }
         }
+
+async function loadDashboard() {
+    try {
+        let totalParticipants = 0;
+        let totalSubjects = 0;
+        let totalQuestions = 0;
+        let totalExams = 0;
+
+        if (isFirebaseConnected) {
+            const participantsSnapshot = await dbRef.users().once('value');
+            totalParticipants = participantsSnapshot.numChildren();
+
+            const subjectsSnapshot = await dbRef.subjects().once('value');
+            totalSubjects = subjectsSnapshot.numChildren();
+
+            const questionsSnapshot = await dbRef.questions().once('value');
+            totalQuestions = questionsSnapshot.numChildren();
+
+            const examsSnapshot = await dbRef.exams().once('value');
+            totalExams = examsSnapshot.numChildren();
+        }
+
+        document.getElementById('dashboardTotalParticipants').textContent = totalParticipants;
+        document.getElementById('dashboardTotalSubjects').textContent = totalSubjects;
+        document.getElementById('dashboardTotalQuestions').textContent = totalQuestions;
+        document.getElementById('dashboardTotalExams').textContent = totalExams;
+
+        // Contoh: bisa diisi dari log aktivitas jika ada
+        const recentActivity = document.getElementById('dashboardRecentActivity');
+        recentActivity.innerHTML = `
+            <li>[${new Date().toLocaleString('id-ID')}] Dashboard diperbarui</li>
+        `;
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
 
         async function loadParticipants() {
             const participantsTable = document.getElementById('participantsTable');
