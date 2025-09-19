@@ -3068,8 +3068,9 @@
                 if (result.isConfirmed) {
                     // Load questions
                     if (currentUser && currentUser.uid === 'demo-student') {
-                        // Demo questions
+                        // Demo questions with various types
                         const demoQuestions = [
+                            // Multiple Choice Questions (1-3)
                             {
                                 id: 'q1',
                                 type: 'multiple_choice',
@@ -3086,14 +3087,6 @@
                             },
                             {
                                 id: 'q2',
-                                type: 'true_false',
-                                category: 'Akidah',
-                                question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
-                                correctAnswer: true,
-                                explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
-                            },
-                            {
-                                id: 'q3',
                                 type: 'multiple_choice',
                                 category: 'Fiqh',
                                 question: 'كم عدد الصلوات المفروضة في اليوم والليلة؟',
@@ -3107,15 +3100,7 @@
                                 explanation: 'الصلوات المفروضة خمس في اليوم والليلة'
                             },
                             {
-                                id: 'q4',
-                                type: 'short_answer',
-                                category: 'Akhlaq',
-                                question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
-                                correctAnswer: 'الصدق',
-                                explanation: 'الصدق من أهم الصفات الإسلامية'
-                            },
-                            {
-                                id: 'q5',
+                                id: 'q3',
                                 type: 'multiple_choice',
                                 category: 'Sirah',
                                 question: 'في أي مدينة ولد النبي محمد صلى الله عليه وسلم؟',
@@ -3127,13 +3112,123 @@
                                 },
                                 correctAnswer: 1,
                                 explanation: 'النبي محمد صلى الله عليه وسلم ولد في مكة المكرمة'
+                            },
+                            // Complex Multiple Choice Questions (4)
+                            {
+                                id: 'q4',
+                                type: 'complex_multiple_choice',
+                                category: 'Akidah',
+                                question: 'أي من العبارات التالية صحيحة عن أركان الإيمان؟ (اختر أكثر من إجابة)',
+                                options: {
+                                    0: {text: 'الإيمان بالله', image: ''},
+                                    1: {text: 'الإيمان بالملائكة', image: ''},
+                                    2: {text: 'الإيمان بالكتب', image: ''},
+                                    3: {text: 'الإيمان بالرسل', image: ''}
+                                },
+                                correctAnswer: [0, 1, 2, 3],
+                                explanation: 'جميع الخيارات هي من أركان الإيمان الستة'
+                            },
+                            // True/False Questions (5)
+                            {
+                                id: 'q5',
+                                type: 'true_false',
+                                category: 'Akidah',
+                                question: 'الإيمان بالله تعالى هو أساس العقيدة الإسلامية',
+                                correctAnswer: true,
+                                explanation: 'الإيمان بالله تعالى هو الأساس الأول للعقيدة الإسلامية'
+                            },
+                            // Matching Questions (6)
+                            {
+                                id: 'q6',
+                                type: 'matching',
+                                category: 'Fiqh',
+                                question: 'جودوهكان الأركان التالية مع تعريفها الصحيح',
+                                columnA: {
+                                    0: 'الشهادة',
+                                    1: 'الصلاة',
+                                    2: 'الزكاة',
+                                    3: 'الصوم'
+                                },
+                                columnB: {
+                                    0: 'الإمساك عن الطعام والشراب',
+                                    1: 'إخراج المال للفقراء',
+                                    2: 'الصلة مع الله',
+                                    3: 'الإقرار بوحدانية الله'
+                                },
+                                correctAnswer: '1-3,2-2,3-1,4-0',
+                                explanation: 'كل ركن له تعريفه الخاص'
+                            },
+                            // Short Answer Questions (7)
+                            {
+                                id: 'q7',
+                                type: 'short_answer',
+                                category: 'Akhlaq',
+                                question: 'ما هي أهم صفة يجب أن يتحلى بها المسلم؟',
+                                correctAnswer: 'الصدق',
+                                explanation: 'الصدق من أهم الصفات الإسلامية'
+                            },
+                            // Essay Questions (8)
+                            {
+                                id: 'q8',
+                                type: 'essay',
+                                category: 'Sirah',
+                                question: 'اكتب فقرة قصيرة عن أهمية الصلاة في حياة المسلم',
+                                guideline: 'يجب أن تتضمن الإجابة: أهمية الصلاة، فوائدها الروحية، وأثرها على السلوك',
+                                maxScore: 100,
+                                explanation: 'الصلاة عماد الدين وصلة بين العبد وربه'
                             }
                         ];
-                        // Shuffle demo questions and their options
-                        let shuffledDemoQuestions = shuffleArray(demoQuestions);
+                        
+                        // Group demo questions by type for structured arrangement
+                        const demoQuestionsByType = {};
+                        demoQuestions.forEach(question => {
+                            const type = question.type || 'unknown';
+                            if (!demoQuestionsByType[type]) {
+                                demoQuestionsByType[type] = [];
+                            }
+                            demoQuestionsByType[type].push(question);
+                        });
+                        
+                        // Define question type order for structured arrangement
+                        const typeOrder = [
+                            'multiple_choice',      // Pilihan Ganda
+                            'complex_multiple_choice', // Pilihan Ganda Kompleks
+                            'true_false',          // Benar-Salah
+                            'matching',            // Menjodohkan
+                            'short_answer',        // Isian Singkat
+                            'essay'                // Esai
+                        ];
+                        
+                        // Shuffle within each type and arrange by type order
+                        let structuredDemoQuestions = [];
+                        let questionCounter = 0;
+                        
+                        typeOrder.forEach(type => {
+                            if (demoQuestionsByType[type] && demoQuestionsByType[type].length > 0) {
+                                // Shuffle questions within this type
+                                const shuffledTypeQuestions = shuffleArray(demoQuestionsByType[type]);
+                                
+                                // Calculate how many questions of this type to include
+                                const remainingQuestions = currentQuiz.totalQuestions - questionCounter;
+                                const questionsToTake = Math.min(shuffledTypeQuestions.length, remainingQuestions);
+                                
+                                if (questionsToTake > 0) {
+                                    const selectedQuestions = shuffledTypeQuestions.slice(0, questionsToTake);
+                                    structuredDemoQuestions = structuredDemoQuestions.concat(selectedQuestions);
+                                    questionCounter += selectedQuestions.length;
+                                    
+                                    console.log(`📝 Demo: Added ${selectedQuestions.length} ${type} questions (total: ${questionCounter})`);
+                                }
+                                
+                                // Stop if we have enough questions
+                                if (questionCounter >= currentQuiz.totalQuestions) {
+                                    return;
+                                }
+                            }
+                        });
                         
                         // Shuffle options for multiple choice questions in demo
-                        shuffledDemoQuestions = shuffledDemoQuestions.map(question => {
+                        structuredDemoQuestions = structuredDemoQuestions.map(question => {
                             if (question.type === 'multiple_choice' || question.type === 'complex_multiple_choice') {
                                 if (question.options) {
                                     // Create array of options with their original indices
@@ -3147,7 +3242,7 @@
                                     
                                     // Rebuild options object with new indices
                                     const newOptions = {};
-                                    let newCorrectAnswer = 0;
+                                    let newCorrectAnswer = question.correctAnswer;
                                     
                                     shuffledOptions.forEach((option, newIndex) => {
                                         newOptions[newIndex] = {
@@ -3155,11 +3250,19 @@
                                             image: option.image || ''
                                         };
                                         
-                                        // Update correct answer index
-                                        if (option.originalIndex === question.correctAnswer) {
+                                        // Update correct answer index for single answer
+                                        if (question.type === 'multiple_choice' && option.originalIndex === question.correctAnswer) {
                                             newCorrectAnswer = newIndex;
                                         }
                                     });
+                                    
+                                    // For complex multiple choice, update array of correct answers
+                                    if (question.type === 'complex_multiple_choice' && Array.isArray(question.correctAnswer)) {
+                                        newCorrectAnswer = question.correctAnswer.map(originalIndex => {
+                                            const newIndex = shuffledOptions.findIndex(option => option.originalIndex === originalIndex);
+                                            return newIndex !== -1 ? newIndex : originalIndex;
+                                        });
+                                    }
                                     
                                     return {
                                         ...question,
@@ -3171,7 +3274,7 @@
                             return question;
                         });
                         
-                        currentQuestions = shuffledDemoQuestions.slice(0, currentQuiz.totalQuestions);
+                        currentQuestions = structuredDemoQuestions.slice(0, currentQuiz.totalQuestions);
                     } else {
                         // Load from Firebase for real users with enhanced debugging
                         console.log('🔍 Loading questions from Firebase for exam:', currentQuiz.id);
@@ -3217,13 +3320,77 @@
                             console.log('🔄 Fallback: Using all questions:', questionArray.length);
                         }
                         
-                        // Shuffle questions randomly
-                        questionArray = shuffleArray(questionArray);
-                        console.log('🔀 Questions shuffled');
+                        // Group questions by type for structured shuffling
+                        const questionsByType = {};
+                        questionArray.forEach(question => {
+                            const type = question.type || 'unknown';
+                            if (!questionsByType[type]) {
+                                questionsByType[type] = [];
+                            }
+                            questionsByType[type].push(question);
+                        });
+                        
+                        console.log('📊 Questions grouped by type:', Object.keys(questionsByType).map(type => 
+                            `${type}: ${questionsByType[type].length}`).join(', '));
+                        
+                        // Define question type order for structured arrangement
+                        const typeOrder = [
+                            'multiple_choice',      // Pilihan Ganda
+                            'complex_multiple_choice', // Pilihan Ganda Kompleks
+                            'true_false',          // Benar-Salah
+                            'matching',            // Menjodohkan
+                            'short_answer',        // Isian Singkat
+                            'essay'                // Esai
+                        ];
+                        
+                        // Shuffle within each type and arrange by type order
+                        let structuredQuestions = [];
+                        let questionCounter = 0;
+                        
+                        typeOrder.forEach(type => {
+                            if (questionsByType[type] && questionsByType[type].length > 0) {
+                                // Shuffle questions within this type
+                                const shuffledTypeQuestions = shuffleArray(questionsByType[type]);
+                                
+                                // Calculate how many questions of this type to include
+                                const remainingQuestions = currentQuiz.totalQuestions - questionCounter;
+                                const questionsToTake = Math.min(shuffledTypeQuestions.length, remainingQuestions);
+                                
+                                if (questionsToTake > 0) {
+                                    const selectedQuestions = shuffledTypeQuestions.slice(0, questionsToTake);
+                                    structuredQuestions = structuredQuestions.concat(selectedQuestions);
+                                    questionCounter += selectedQuestions.length;
+                                    
+                                    console.log(`📝 Added ${selectedQuestions.length} ${type} questions (total: ${questionCounter})`);
+                                }
+                                
+                                // Stop if we have enough questions
+                                if (questionCounter >= currentQuiz.totalQuestions) {
+                                    return;
+                                }
+                            }
+                        });
+                        
+                        // Handle any remaining question types not in the order
+                        Object.keys(questionsByType).forEach(type => {
+                            if (!typeOrder.includes(type) && questionCounter < currentQuiz.totalQuestions) {
+                                const shuffledTypeQuestions = shuffleArray(questionsByType[type]);
+                                const remainingQuestions = currentQuiz.totalQuestions - questionCounter;
+                                const questionsToTake = Math.min(shuffledTypeQuestions.length, remainingQuestions);
+                                
+                                if (questionsToTake > 0) {
+                                    const selectedQuestions = shuffledTypeQuestions.slice(0, questionsToTake);
+                                    structuredQuestions = structuredQuestions.concat(selectedQuestions);
+                                    questionCounter += selectedQuestions.length;
+                                    
+                                    console.log(`📝 Added ${selectedQuestions.length} ${type} questions (total: ${questionCounter})`);
+                                }
+                            }
+                        });
                         
                         // Adjust question count if not enough questions available
                         const requestedQuestions = currentQuiz.totalQuestions;
-                        const availableQuestions = Math.min(questionArray.length, requestedQuestions);
+                        const availableQuestions = Math.min(structuredQuestions.length, requestedQuestions);
                         
                         if (availableQuestions < requestedQuestions) {
                             console.warn(`⚠️ Only ${availableQuestions} questions available, but ${requestedQuestions} requested`);
@@ -3232,8 +3399,8 @@
                         }
                         
                         // Take only the required number of questions
-                        currentQuestions = questionArray.slice(0, availableQuestions);
-                        console.log(`✅ Selected ${currentQuestions.length} questions for quiz`);
+                        currentQuestions = structuredQuestions.slice(0, availableQuestions);
+                        console.log(`✅ Selected ${currentQuestions.length} questions for quiz with structured order`);
                         
                         // Shuffle options for multiple choice questions
                         currentQuestions = currentQuestions.map(question => {
@@ -3394,6 +3561,26 @@
                     html += '</div>';
                     break;
 
+                case 'complex_multiple_choice':
+                    html += '<div class="space-y-3">';
+                    html += '<p class="text-sm text-blue-600 mb-3"><i class="fas fa-info-circle mr-1"></i>Pilih satu atau lebih jawaban yang benar</p>';
+                    Object.keys(question.options || {}).forEach(index => {
+                        const option = question.options[index];
+                        const userAnswers = quizAnswers[question.id] || [];
+                        const isChecked = Array.isArray(userAnswers) && userAnswers.includes(parseInt(index)) ? 'checked' : '';
+                        html += `
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="answer_${question.id}" value="${index}" ${isChecked} class="mr-3">
+                                <div class="flex-1">
+                                    <span class="arabic-text">${option.text}</span>
+                                    ${option.image ? `<img src="${option.image}" alt="Option Image" class="max-w-32 h-auto mt-2 rounded" onerror="this.style.display='none';">` : ''}
+                                </div>
+                            </label>
+                        `;
+                    });
+                    html += '</div>';
+                    break;
+
                 case 'true_false':
                     const trueChecked = quizAnswers[question.id] === true ? 'checked' : '';
                     const falseChecked = quizAnswers[question.id] === false ? 'checked' : '';
@@ -3432,22 +3619,90 @@
                         </div>
                     `;
                     break;
+
+                case 'matching':
+                    html += '<div class="space-y-4">';
+                    html += '<p class="text-sm text-blue-600 mb-3"><i class="fas fa-info-circle mr-1"></i>Jodohkan item dari kolom A dengan kolom B</p>';
+                    html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">';
+                    
+                    // Column A
+                    html += '<div><h4 class="font-semibold mb-3 text-gray-700">Kolom A</h4>';
+                    Object.keys(question.columnA || {}).forEach(index => {
+                        const item = question.columnA[index];
+                        html += `
+                            <div class="mb-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                                <span class="font-medium">${parseInt(index) + 1}.</span> 
+                                <span class="arabic-text">${item}</span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    
+                    // Column B with dropdowns
+                    html += '<div><h4 class="font-semibold mb-3 text-gray-700">Kolom B</h4>';
+                    Object.keys(question.columnB || {}).forEach(index => {
+                        const item = question.columnB[index];
+                        const currentAnswer = quizAnswers[question.id] || {};
+                        const selectedValue = currentAnswer[`match_${index}`] || '';
+                        
+                        html += `
+                            <div class="mb-2 p-2 bg-green-50 border border-green-200 rounded">
+                                <div class="flex items-center justify-between">
+                                    <span class="arabic-text flex-1">${item}</span>
+                                    <select name="answer_${question.id}_match_${index}" class="ml-2 px-2 py-1 border border-gray-300 rounded text-sm">
+                                        <option value="">Pilih...</option>
+                        `;
+                        
+                        Object.keys(question.columnA || {}).forEach(aIndex => {
+                            const selected = selectedValue === (parseInt(aIndex) + 1).toString() ? 'selected' : '';
+                            html += `<option value="${parseInt(aIndex) + 1}" ${selected}>${parseInt(aIndex) + 1}</option>`;
+                        });
+                        
+                        html += `
+                                    </select>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                    break;
             }
 
             questionContent.innerHTML = html;
 
             // Add event listeners for answer changes
-            const answerInputs = questionContent.querySelectorAll(`[name="answer_${question.id}"]`);
+            const answerInputs = questionContent.querySelectorAll(`[name="answer_${question.id}"], [name^="answer_${question.id}_"]`);
             answerInputs.forEach(input => {
-                const eventType = input.type === 'radio' ? 'change' : 'input';
+                const eventType = input.type === 'radio' ? 'change' : (input.type === 'checkbox' ? 'change' : 'input');
                 input.addEventListener(eventType, (e) => {
                     let value = e.target.value;
+                    
                     if (question.type === 'multiple_choice') {
                         value = parseInt(value);
+                        quizAnswers[question.id] = value;
+                    } else if (question.type === 'complex_multiple_choice') {
+                        // Handle multiple checkboxes
+                        const checkboxes = questionContent.querySelectorAll(`input[name="answer_${question.id}"]:checked`);
+                        const selectedValues = Array.from(checkboxes).map(cb => parseInt(cb.value));
+                        quizAnswers[question.id] = selectedValues;
                     } else if (question.type === 'true_false') {
                         value = value === 'true';
+                        quizAnswers[question.id] = value;
+                    } else if (question.type === 'matching') {
+                        // Handle matching dropdowns
+                        if (input.name.includes('_match_')) {
+                            if (!quizAnswers[question.id]) {
+                                quizAnswers[question.id] = {};
+                            }
+                            const matchKey = input.name.split('_').slice(-1)[0]; // Get the last part (index)
+                            quizAnswers[question.id][`match_${matchKey}`] = value;
+                        }
+                    } else {
+                        // For short_answer and essay
+                        quizAnswers[question.id] = value;
                     }
-                    quizAnswers[question.id] = value;
                 });
             });
 
@@ -3510,12 +3765,77 @@
 
             currentQuestions.forEach(question => {
                 const userAnswer = quizAnswers[question.id];
-                if (question.type === 'multiple_choice' || question.type === 'true_false') {
-                    if (userAnswer === question.correctAnswer) {
-                        correctAnswers++;
-                    }
+                
+                switch (question.type) {
+                    case 'multiple_choice':
+                    case 'true_false':
+                        if (userAnswer === question.correctAnswer) {
+                            correctAnswers++;
+                        }
+                        break;
+                        
+                    case 'complex_multiple_choice':
+                        // Check if arrays match (all correct answers selected, no incorrect ones)
+                        if (Array.isArray(userAnswer) && Array.isArray(question.correctAnswer)) {
+                            const userSet = new Set(userAnswer.sort());
+                            const correctSet = new Set(question.correctAnswer.sort());
+                            
+                            if (userSet.size === correctSet.size && 
+                                [...userSet].every(val => correctSet.has(val))) {
+                                correctAnswers++;
+                            }
+                        }
+                        break;
+                        
+                    case 'short_answer':
+                        // Simple text comparison (case-insensitive, trimmed)
+                        if (userAnswer && question.correctAnswer) {
+                            const userText = userAnswer.toString().trim().toLowerCase();
+                            const correctText = question.correctAnswer.toString().trim().toLowerCase();
+                            
+                            // Check for exact match or if correct answer contains multiple options (comma-separated)
+                            if (correctText.includes(',')) {
+                                const correctOptions = correctText.split(',').map(opt => opt.trim());
+                                if (correctOptions.some(opt => opt === userText)) {
+                                    correctAnswers++;
+                                }
+                            } else if (userText === correctText) {
+                                correctAnswers++;
+                            }
+                        }
+                        break;
+                        
+                    case 'matching':
+                        // Check matching answers
+                        if (userAnswer && question.correctAnswer) {
+                            const correctPairs = question.correctAnswer.split(',');
+                            let matchingScore = 0;
+                            let totalPairs = correctPairs.length;
+                            
+                            correctPairs.forEach(pair => {
+                                const [aIndex, bIndex] = pair.split('-').map(idx => parseInt(idx.trim()));
+                                const userMatchKey = `match_${bIndex - 1}`; // Convert to 0-based index
+                                const userSelectedA = parseInt(userAnswer[userMatchKey]);
+                                
+                                if (userSelectedA === aIndex) {
+                                    matchingScore++;
+                                }
+                            });
+                            
+                            // Award full point if all pairs are correct
+                            if (matchingScore === totalPairs) {
+                                correctAnswers++;
+                            }
+                        }
+                        break;
+                        
+                    case 'essay':
+                        // Essay questions need manual grading, for now give partial credit if answered
+                        if (userAnswer && userAnswer.toString().trim().length > 10) {
+                            correctAnswers += 0.5; // Give half credit for attempting essay
+                        }
+                        break;
                 }
-                // For other types, manual grading would be needed
             });
 
             const score = Math.round((correctAnswers / totalQuestions) * 100);
@@ -5402,5 +5722,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9814d76030c4fcf7',t:'MTc1ODI0MDQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9814fc0fb6d09fd7',t:'MTc1ODI0MTkzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
