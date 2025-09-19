@@ -1811,94 +1811,106 @@ async function loadDashboard() {
             }
         }
 
-async function loadResults() {
-    const resultsTableBody = document.getElementById('resultsTableBody');
-    resultsTableBody.innerHTML = `
-        <tr>
-            <td colspan="6" class="px-4 py-4 text-center text-gray-500">
-                Memuat hasil ujian...
-            </td>
-        </tr>
-    `;
+        async function loadResults() {
+            try {
+                let results = {};
+                let users = {};
+                let exams = {};
+                
+                // If demo admin, use demo data
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    results = {
+                        'result-1': {
+                            userId: 'demo-student',
+                            examId: 'demo-exam-1',
+                            score: 85,
+                            correctAnswers: 4,
+                            totalQuestions: 5,
+                            passed: true,
+                            completedAt: Date.now() - 86400000 // 1 day ago
+                        },
+                        'result-2': {
+                            userId: 'student-2',
+                            examId: 'demo-exam-1',
+                            score: 60,
+                            correctAnswers: 3,
+                            totalQuestions: 5,
+                            passed: false,
+                            completedAt: Date.now() - 172800000 // 2 days ago
+                        },
+                        'result-3': {
+                            userId: 'student-3',
+                            examId: 'demo-exam-2',
+                            score: 90,
+                            correctAnswers: 4,
+                            totalQuestions: 4,
+                            passed: true,
+                            completedAt: Date.now() - 259200000 // 3 days ago
+                        }
+                    };
+                    
+                    users = {
+                        'demo-student': { name: 'Peserta Demo', email: 'peserta@email.com' },
+                        'student-2': { name: 'Ahmad Fauzi', email: 'ahmad@email.com' },
+                        'student-3': { name: 'Siti Aminah', email: 'siti@email.com' }
+                    };
+                    
+                    exams = {
+                        'demo-exam-1': { title: 'Quiz Fiqh Dasar' },
+                        'demo-exam-2': { title: 'Quiz Akidah Islam' }
+                    };
+                } else {
+                    // Load from Firebase for real admin
+                    const resultsSnapshot = await dbRef.results().once('value');
+                    results = resultsSnapshot.val() || {};
+                    
+                    const usersSnapshot = await dbRef.users().once('value');
+                    users = usersSnapshot.val() || {};
+                    
+                    const examsSnapshot = await dbRef.exams().once('value');
+                    exams = examsSnapshot.val() || {};
+                }
+                
+                // Update statistics
+                const totalResults = Object.keys(results).length;
+                const passedResults = Object.values(results).filter(r => r.passed).length;
+                const failedResults = totalResults - passedResults;
+                
+                document.getElementById('totalParticipants').textContent = totalResults;
+                document.getElementById('passedCount').textContent = passedResults;
+                document.getElementById('failedCount').textContent = failedResults;
 
-    try {
-        let results = {};
-        let exams = {};
-        let subjects = {};
+                const resultsTable = document.getElementById('resultsTable');
+                resultsTable.innerHTML = '';
+                
+                Object.keys(results).forEach(resultId => {
+                    const result = results[resultId];
+                    const user = users[result.userId] || {};
+                    const exam = exams[result.examId] || {};
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.name || 'Unknown'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${exam.title || 'Unknown'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${result.score}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${result.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${result.passed ? 'Lulus' : 'Tidak Lulus'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(result.completedAt).toLocaleString('id-ID')}</td>
+                    `;
+                    resultsTable.appendChild(row);
+                });
 
-        if (isFirebaseConnected) {
-            // Ambil hasil ujian
-            const resultsSnapshot = await dbRef.results().once('value');
-            results = resultsSnapshot.val() || {};
-
-            // Ambil daftar ujian
-            const examsSnapshot = await dbRef.exams().once('value');
-            exams = examsSnapshot.val() || {};
-
-            // Ambil daftar mapel
-            const subjectsSnapshot = await dbRef.subjects().once('value');
-            subjects = subjectsSnapshot.val() || {};
+                if (Object.keys(results).length === 0) {
+                    resultsTable.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Belum ada hasil ujian</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('resultsTable').innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">Gagal memuat hasil ujian</td></tr>';
+            }
         }
-
-        // Ambil nilai filter
-        const subjectFilter = document.getElementById('subjectFilterResults')?.value || '';
-        const examFilter = document.getElementById('examFilterResults')?.value || '';
-
-        resultsTableBody.innerHTML = '';
-
-        if (Object.keys(results).length === 0) {
-            resultsTableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-4 py-4 text-center text-gray-500">
-                        Belum ada hasil ujian
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        Object.entries(results).forEach(([resultId, result]) => {
-            const exam = exams[result.examId] || {};
-            const subject = subjects[exam.subjectId] || { name: 'Unknown' };
-
-            // ✅ Terapkan filter mapel
-            if (subjectFilter && exam.subjectId !== subjectFilter) return;
-
-            // ✅ Terapkan filter ujian
-            if (examFilter && result.examId !== examFilter) return;
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="px-4 py-2 border">${result.participantName || '-'}</td>
-                <td class="px-4 py-2 border">${exam.title || 'Unknown'}</td>
-                <td class="px-4 py-2 border">${subject.name || '-'}</td>
-                <td class="px-4 py-2 border">${result.score != null ? result.score + '%' : '-'}</td>
-                <td class="px-4 py-2 border">${result.status || '-'}</td>
-                <td class="px-4 py-2 border">${result.timestamp ? new Date(result.timestamp).toLocaleString('id-ID') : '-'}</td>
-            `;
-            resultsTableBody.appendChild(row);
-        });
-
-        if (!resultsTableBody.hasChildNodes()) {
-            resultsTableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-4 py-4 text-center text-gray-500">
-                        Tidak ada hasil sesuai filter
-                    </td>
-                </tr>
-            `;
-        }
-    } catch (error) {
-        console.error('Error loading results:', error);
-        resultsTableBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-4 py-4 text-center text-red-500">
-                    Gagal memuat hasil ujian
-                </td>
-            </tr>
-        `;
-    }
-}
 
         function getQuestionTypeLabel(type) {
             const labels = {
@@ -5196,166 +5208,195 @@ async function loadResults() {
         }
 
         // Export Results to Excel
-// Export Results to Excel
-async function exportResults() {
-    try {
-        let results = {};
-        let users = {};
-        let exams = {};
-        let subjects = {};
-        
-        // Get filter values
-        const subjectFilter = document.getElementById('subjectFilterResults')?.value || '';
-        const examFilter = document.getElementById('examFilterResults')?.value || '';
-        
-        if (isFirebaseConnected) {
-            const [resultsSnapshot, usersSnapshot, examsSnapshot, subjectsSnapshot] = await Promise.all([
-                dbRef.results().once('value'),
-                dbRef.users().once('value'),
-                dbRef.exams().once('value'),
-                dbRef.subjects().once('value')
-            ]);
-            
-            results = resultsSnapshot.val() || {};
-            users = usersSnapshot.val() || {};
-            exams = examsSnapshot.val() || {};
-            subjects = subjectsSnapshot.val() || {};
+        async function exportResults() {
+            try {
+                let results = {};
+                let users = {};
+                let exams = {};
+                let subjects = {};
+                
+                // Get filter values
+                const subjectFilter = document.getElementById('subjectFilterResults')?.value || '';
+                const examFilter = document.getElementById('examFilterResults')?.value || '';
+                
+                if (currentUser && currentUser.uid === 'demo-admin') {
+                    // Demo data
+                    results = {
+                        'result-1': {
+                            userId: 'demo-student',
+                            examId: 'demo-exam-1',
+                            score: 85,
+                            correctAnswers: 4,
+                            totalQuestions: 5,
+                            passed: true,
+                            completedAt: Date.now() - 86400000
+                        },
+                        'result-2': {
+                            userId: 'student-2',
+                            examId: 'demo-exam-1',
+                            score: 60,
+                            correctAnswers: 3,
+                            totalQuestions: 5,
+                            passed: false,
+                            completedAt: Date.now() - 172800000
+                        },
+                        'result-3': {
+                            userId: 'student-3',
+                            examId: 'demo-exam-2',
+                            score: 90,
+                            correctAnswers: 4,
+                            totalQuestions: 4,
+                            passed: true,
+                            completedAt: Date.now() - 259200000
+                        }
+                    };
+                    
+                    users = {
+                        'demo-student': { name: 'Peserta Demo', email: 'peserta@email.com', class: '6A' },
+                        'student-2': { name: 'Ahmad Fauzi', email: 'ahmad@email.com', class: '6A' },
+                        'student-3': { name: 'Siti Aminah', email: 'siti@email.com', class: '6B' }
+                    };
+                    
+                    exams = {
+                        'demo-exam-1': { title: 'Quiz Fiqh Dasar', subjectId: 'fiqh' },
+                        'demo-exam-2': { title: 'Quiz Akidah Islam', subjectId: 'akidah' }
+                    };
+                    
+                    subjects = {
+                        'fiqh': { name: 'Fiqh', code: 'FQH' },
+                        'akidah': { name: 'Akidah', code: 'AQD' }
+                    };
+                } else if (isFirebaseConnected) {
+                    // Load from Firebase
+                    const [resultsSnapshot, usersSnapshot, examsSnapshot, subjectsSnapshot] = await Promise.all([
+                        dbRef.results().once('value'),
+                        dbRef.users().once('value'),
+                        dbRef.exams().once('value'),
+                        dbRef.subjects().once('value')
+                    ]);
+                    
+                    results = resultsSnapshot.val() || {};
+                    users = usersSnapshot.val() || {};
+                    exams = examsSnapshot.val() || {};
+                    subjects = subjectsSnapshot.val() || {};
+                }
+                
+                // Filter results
+                const filteredResults = Object.keys(results).filter(resultId => {
+                    const result = results[resultId];
+                    const exam = exams[result.examId] || {};
+                    
+                    if (subjectFilter && exam.subjectId !== subjectFilter) return false;
+                    if (examFilter && result.examId !== examFilter) return false;
+                    
+                    return true;
+                });
+                
+                if (filteredResults.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Tidak Ada Data',
+                        text: 'Tidak ada hasil ujian untuk diekspor dengan filter yang dipilih'
+                    });
+                    return;
+                }
+                
+                // Prepare export data
+                const exportData = filteredResults.map(resultId => {
+                    const result = results[resultId];
+                    const user = users[result.userId] || {};
+                    const exam = exams[result.examId] || {};
+                    const subject = subjects[exam.subjectId] || {};
+                    
+                    return {
+                        'Nama Peserta': user.name || 'Unknown',
+                        'Email': user.email || 'Unknown',
+                        'Kelas': user.class || '-',
+                        'Ujian': exam.title || 'Unknown',
+                        'Mata Pelajaran': subject.name || 'Unknown',
+                        'Kode Mapel': subject.code || '-',
+                        'Skor (%)': result.score,
+                        'Jawaban Benar': result.correctAnswers,
+                        'Total Soal': result.totalQuestions,
+                        'Status': result.passed ? 'Lulus' : 'Tidak Lulus',
+                        'Tanggal Ujian': new Date(result.completedAt).toLocaleDateString('id-ID'),
+                        'Waktu Ujian': new Date(result.completedAt).toLocaleTimeString('id-ID')
+                    };
+                });
+                
+                // Create Excel file
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                
+                // Set column widths
+                worksheet['!cols'] = [
+                    { width: 20 }, // Nama Peserta
+                    { width: 25 }, // Email
+                    { width: 10 }, // Kelas
+                    { width: 25 }, // Ujian
+                    { width: 20 }, // Mata Pelajaran
+                    { width: 12 }, // Kode Mapel
+                    { width: 10 }, // Skor
+                    { width: 12 }, // Jawaban Benar
+                    { width: 10 }, // Total Soal
+                    { width: 12 }, // Status
+                    { width: 15 }, // Tanggal
+                    { width: 15 }  // Waktu
+                ];
+                
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Hasil Ujian');
+                
+                // Add summary sheet
+                const totalResults = filteredResults.length;
+                const passedResults = filteredResults.filter(id => results[id].passed).length;
+                const failedResults = totalResults - passedResults;
+                const averageScore = totalResults > 0 ? 
+                    Math.round(filteredResults.reduce((sum, id) => sum + results[id].score, 0) / totalResults) : 0;
+                
+                const summaryData = [
+                    { 'Statistik': 'Total Peserta', 'Nilai': totalResults },
+                    { 'Statistik': 'Lulus', 'Nilai': passedResults },
+                    { 'Statistik': 'Tidak Lulus', 'Nilai': failedResults },
+                    { 'Statistik': 'Persentase Kelulusan', 'Nilai': totalResults > 0 ? `${Math.round((passedResults / totalResults) * 100)}%` : '0%' },
+                    { 'Statistik': 'Rata-rata Skor', 'Nilai': `${averageScore}%` },
+                    { 'Statistik': 'Tanggal Export', 'Nilai': new Date().toLocaleString('id-ID') }
+                ];
+                
+                const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+                summarySheet['!cols'] = [{ width: 25 }, { width: 20 }];
+                XLSX.utils.book_append_sheet(workbook, summarySheet, 'Ringkasan');
+                
+                // Generate filename
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                const filename = `Hasil_Ujian_${dateStr}_${timeStr}.xlsx`;
+                
+                XLSX.writeFile(workbook, filename);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Export Berhasil!',
+                    html: `
+                        <div class="text-center">
+                            <p class="mb-2">File berhasil disimpan:</p>
+                            <p class="font-mono text-sm bg-gray-100 p-2 rounded">${filename}</p>
+                            <p class="text-sm text-gray-600 mt-2">${totalResults} hasil ujian diekspor</p>
+                        </div>
+                    `,
+                    timer: 4000,
+                    showConfirmButton: false
+                });
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Export Gagal',
+                    text: 'Terjadi kesalahan saat mengekspor data: ' + error.message
+                });
+            }
         }
-        
-        // Filter results
-        const filteredResults = Object.keys(results).filter(resultId => {
-            const result = results[resultId];
-            const exam = exams[result.examId] || {};
-            if (subjectFilter && exam.subjectId !== subjectFilter) return false;
-            if (examFilter && result.examId !== examFilter) return false;
-            return true;
-        });
-        
-        if (filteredResults.length === 0) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Tidak ada data',
-                text: 'Tidak ada hasil ujian sesuai filter.'
-            });
-            return;
-        }
-        
-        const worksheetData = [
-            ["Nama Peserta", "Email", "Kelas", "Ujian", "Mata Pelajaran", "Kode Mapel", "Skor", "Jawaban Benar", "Total Soal", "Status", "Tanggal", "Waktu"]
-        ];
-        
-        filteredResults.forEach(resultId => {
-            const result = results[resultId];
-            const user = users[result.userId] || {};
-            const exam = exams[result.examId] || {};
-            const subject = subjects[exam.subjectId] || {};
-            
-            const date = result.completedAt ? new Date(result.completedAt) : null;
-            const dateStr = date ? date.toLocaleDateString('id-ID') : "-";
-            const timeStr = date ? date.toLocaleTimeString('id-ID') : "-";
-            
-            worksheetData.push([
-                user.name || "Unknown",
-                user.email || "-",
-                user.class || "-",
-                exam.title || "Unknown",
-                subject.name || "Unknown",
-                exam.subjectId || "-",
-                result.score != null ? result.score + "%" : "-",
-                result.correctAnswers != null ? result.correctAnswers : "-",
-                result.totalQuestions != null ? result.totalQuestions : "-",
-                result.passed ? "Lulus" : "Tidak Lulus",
-                dateStr,
-                timeStr
-            ]);
-        });
-        
-        // Create worksheet
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-        
-        // Set column widths
-        worksheet['!cols'] = [
-            { width: 20 }, // Nama Peserta
-            { width: 25 }, // Email
-            { width: 10 }, // Kelas
-            { width: 25 }, // Ujian
-            { width: 20 }, // Mata Pelajaran
-            { width: 12 }, // Kode Mapel
-            { width: 10 }, // Skor
-            { width: 12 }, // Jawaban Benar
-            { width: 10 }, // Total Soal
-            { width: 12 }, // Status
-            { width: 15 }, // Tanggal
-            { width: 15 }  // Waktu
-        ];
-        
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Hasil Ujian');
-        
-        // Create summary sheet
-        const totalResults = filteredResults.length;
-        const passedResults = filteredResults.filter(id => results[id].passed).length;
-        const failedResults = totalResults - passedResults;
-        const averageScore = Math.round(filteredResults.reduce((sum, id) => sum + results[id].score, 0) / totalResults);
-        
-        const summaryData = [
-            { 'Statistik': 'Total Peserta', 'Nilai': totalResults },
-            { 'Statistik': 'Lulus', 'Nilai': passedResults },
-            { 'Statistik': 'Tidak Lulus', 'Nilai': failedResults },
-            { 'Statistik': 'Persentase Kelulusan', 'Nilai': `${Math.round((passedResults / totalResults) * 100)}%` },
-            { 'Statistik': 'Rata-rata Skor', 'Nilai': `${averageScore}%` },
-            { 'Statistik': 'Tanggal Export', 'Nilai': new Date().toLocaleString('id-ID') }
-        ];
-        
-        const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-        summarySheet['!cols'] = [{ width: 25 }, { width: 20 }];
-        XLSX.utils.book_append_sheet(workbook, summarySheet, 'Ringkasan');
-        
-        // === Perbaikan penamaan file export ===
-        let fileName = "hasil_ujian";
-        
-        if (subjectFilter) {
-            const subjSelect = document.getElementById('subjectFilterResults');
-            const subjText = subjSelect.options[subjSelect.selectedIndex].text;
-            fileName += `_${subjText.replace(/\s+/g, '_')}`;
-        }
-        
-        if (examFilter) {
-            const examSelect = document.getElementById('examFilterResults');
-            const examText = examSelect.options[examSelect.selectedIndex].text;
-            fileName += `_${examText.replace(/\s+/g, '_')}`;
-        }
-        
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-        fileName += `_${dateStr}.xlsx`;
-        // === End perbaikan ===
-        
-        XLSX.writeFile(workbook, fileName);
-        
-        Swal.fire({
-            icon: 'success',
-            title: 'Export Berhasil!',
-            html: `
-                <div class="text-center">
-                    <p class="mb-2">File berhasil disimpan:</p>
-                    <p class="font-mono text-sm bg-gray-100 p-2 rounded">${fileName}</p>
-                    <p class="text-sm text-gray-600 mt-2">${totalResults} hasil ujian diekspor</p>
-                </div>
-            `,
-            timer: 4000,
-            showConfirmButton: false
-        });
-        
-    } catch (error) {
-        console.error('Export error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Export Gagal',
-            text: 'Terjadi kesalahan saat mengekspor data: ' + error.message
-        });
-    }
-}
 
         // Print Results
         async function printResults() {
