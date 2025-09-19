@@ -118,8 +118,8 @@
                             </button>
                         </div>
                         <div class="text-xs sm:text-sm text-green-100 space-y-1">
-                            <p><strong>2025 &copy; Mahfud Sidik</strong></p>
-                            <p>MIN SINGKAWANG</p>
+                            <p><strong>📚 Sistem CBT Lengkap</strong></p>
+                            <p>Daftar atau login untuk mengakses sistem ujian online</p>
                         </div>
                     </div>
                 </div>
@@ -521,15 +521,15 @@
     </div>
 
     <script>
-        // Firebase Configuration
+        // Firebase Configuration - Updated for proper OAuth domain support
         const firebaseConfig = {
             apiKey: "AIzaSyCpVC84x-_cYGf3WDYdmfkV9X6VH4BsvC0",
             authDomain: "jual-beli-d9d80.firebaseapp.com",
             databaseURL: "https://jual-beli-d9d80-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "jual-beli-d9d80",
             storageBucket: "jual-beli-d9d80.firebasestorage.app",
-            messagingSenderId: ". ",
-            appId: "1:. :web:624adcdbffb699850d7262"
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:624adcdbffb699850d7262"
         };
 
         // Initialize Firebase with proper error handling
@@ -592,9 +592,14 @@
                             <li>Pilih project Anda atau buat project baru</li>
                             <li>Aktifkan <strong>Realtime Database</strong> di menu Database</li>
                             <li>Aktifkan <strong>Email/Password Authentication</strong> di menu Authentication > Sign-in method</li>
+                            <li><strong>Tambahkan domain OAuth:</strong> Authentication > Settings > Authorized domains</li>
+                            <li>Tambahkan domain: <code class="bg-gray-100 px-1 rounded">minskw.github.io</code></li>
                             <li>Copy konfigurasi dari Project Settings > General > Your apps</li>
                             <li>Ganti konfigurasi firebaseConfig di kode ini</li>
                         </ol>
+                        <div class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                            <p class="text-yellow-800 text-xs"><strong>OAuth Domain Issue:</strong> Tambahkan domain Anda ke Authorized domains di Firebase Console untuk mengatasi error OAuth.</p>
+                        </div>
                         <p class="mt-3 text-red-600"><strong>Error:</strong> ${error.message}</p>
                     </div>
                 `,
@@ -2129,7 +2134,8 @@
             
             const questionData = {
                 type: document.getElementById('questionType').value,
-                category: document.getElementById('questionCategory').value,
+                subjectId: document.getElementById('questionSubject').value, // Fix: use subjectId instead of category
+                category: document.getElementById('questionSubject').value, // Keep category for backward compatibility
                 question: document.getElementById('questionText').value,
                 questionImage: document.getElementById('questionImage').value,
                 explanation: document.getElementById('questionExplanation')?.value || '',
@@ -3167,26 +3173,67 @@
                         
                         currentQuestions = shuffledDemoQuestions.slice(0, currentQuiz.totalQuestions);
                     } else {
-                        // Load from Firebase for real users
+                        // Load from Firebase for real users with enhanced debugging
+                        console.log('🔍 Loading questions from Firebase for exam:', currentQuiz.id);
+                        console.log('📋 Exam subject filter:', currentQuiz.subjectId);
+                        
                         const questionsSnapshot = await dbRef.questions().once('value');
                         const allQuestions = questionsSnapshot.val() || {};
                         
-                        // Convert to array, filter by subject if needed, and shuffle
+                        console.log('📚 Total questions in database:', Object.keys(allQuestions).length);
+                        
+                        // Convert to array for easier processing
                         let questionArray = Object.keys(allQuestions).map(id => ({
                             id,
                             ...allQuestions[id]
                         }));
                         
+                        console.log('🔍 Questions before filtering:', questionArray.length);
+                        
                         // Filter by subject if exam has specific subject
                         if (currentQuiz.subjectId) {
-                            questionArray = questionArray.filter(q => q.subjectId === currentQuiz.subjectId);
+                            console.log('🎯 Filtering by subject:', currentQuiz.subjectId);
+                            const beforeFilter = questionArray.length;
+                            questionArray = questionArray.filter(q => {
+                                // Check both subjectId and category for backward compatibility
+                                const matchesSubjectId = q.subjectId === currentQuiz.subjectId;
+                                const matchesCategory = q.category === currentQuiz.subjectId;
+                                return matchesSubjectId || matchesCategory;
+                            });
+                            console.log(`📋 Questions after subject filter: ${questionArray.length} (was ${beforeFilter})`);
+                            
+                            // Debug: Show what subjects are available
+                            const availableSubjects = [...new Set(Object.values(allQuestions).map(q => q.subjectId || q.category))];
+                            console.log('📊 Available subjects in database:', availableSubjects);
+                        }
+                        
+                        // Fallback if no questions found for specific subject
+                        if (questionArray.length === 0) {
+                            console.warn('⚠️ No questions found for subject, using all available questions');
+                            questionArray = Object.keys(allQuestions).map(id => ({
+                                id,
+                                ...allQuestions[id]
+                            }));
+                            console.log('🔄 Fallback: Using all questions:', questionArray.length);
                         }
                         
                         // Shuffle questions randomly
                         questionArray = shuffleArray(questionArray);
+                        console.log('🔀 Questions shuffled');
+                        
+                        // Adjust question count if not enough questions available
+                        const requestedQuestions = currentQuiz.totalQuestions;
+                        const availableQuestions = Math.min(questionArray.length, requestedQuestions);
+                        
+                        if (availableQuestions < requestedQuestions) {
+                            console.warn(`⚠️ Only ${availableQuestions} questions available, but ${requestedQuestions} requested`);
+                            // Update quiz total questions to match available
+                            currentQuiz.totalQuestions = availableQuestions;
+                        }
                         
                         // Take only the required number of questions
-                        currentQuestions = questionArray.slice(0, currentQuiz.totalQuestions);
+                        currentQuestions = questionArray.slice(0, availableQuestions);
+                        console.log(`✅ Selected ${currentQuestions.length} questions for quiz`);
                         
                         // Shuffle options for multiple choice questions
                         currentQuestions = currentQuestions.map(question => {
@@ -3228,6 +3275,26 @@
                         });
                     }
                     
+                    // Check if we have questions to start the quiz
+                    if (currentQuestions.length === 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Tidak Ada Soal',
+                            html: `
+                                <div class="text-center">
+                                    <p class="mb-2">Tidak ada soal yang tersedia untuk ujian ini.</p>
+                                    <p class="text-sm text-gray-600">Silakan hubungi administrator untuk menambahkan soal.</p>
+                                    ${currentQuiz.subjectId ? `<p class="text-xs text-orange-600 mt-2">Filter mata pelajaran: ${currentQuiz.subjectId}</p>` : ''}
+                                </div>
+                            `,
+                            confirmButtonText: 'Kembali ke Dashboard'
+                        }).then(() => {
+                            showStudentDashboard();
+                        });
+                        return;
+                    }
+                    
+                    console.log(`🎯 Quiz initialized with ${currentQuestions.length} questions`);
                     initializeQuiz();
                 }
             } catch (error) {
@@ -5335,5 +5402,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981019d1032f91c9',t:'MTc1ODE5MDcyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9814d76030c4fcf7',t:'MTc1ODI0MDQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
