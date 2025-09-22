@@ -216,14 +216,8 @@
                     <h3 class="text-lg font-bold text-blue-800 mb-4">🔗 Integrasi Google Sheets</h3>
                     <div class="space-y-4">
                         <div class="bg-white rounded-lg p-4">
-                            <h4 class="font-semibold text-gray-800 mb-2">Langkah Setup Google Apps Script:</h4>
-                            <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
-                                <li>Buka <a href="https://script.google.com" target="_blank" class="text-blue-600 hover:underline">Google Apps Script</a></li>
-                                <li>Buat project baru dan copy kode Apps Script yang disediakan</li>
-                                <li>Deploy sebagai Web App dengan akses "Anyone"</li>
-                                <li>Copy URL deployment dan ganti YOUR_SCRIPT_ID di kode</li>
-                                <li>Klik tombol Sync untuk menghubungkan dengan Google Sheets</li>
-                            </ol>
+                            <h4 class="font-semibold text-gray-800 mb-2">Status Koneksi:</h4>
+                            <p class="text-sm text-gray-700" id="connectionInfo">Sistem terhubung dengan Google Sheets untuk penyimpanan data real-time.</p>
                         </div>
                         <div class="bg-white rounded-lg p-4">
                             <h4 class="font-semibold text-gray-800 mb-2">Keuntungan Google Sheets:</h4>
@@ -649,8 +643,8 @@
             }
         }
 
-        // Google Apps Script Configuration
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCguom0c9mStfer5l-od_BqJKPr8LpnHTpHgWcXkeLITIS0FEDrC5tTVIe5f2i561ZZQ/exec";
+        // Google Apps Script Configuration - GANTI DENGAN URL DEPLOYMENT ANDA
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCguom0c9mStfer5l-od_BqJKPr8LpnHTpHgWcXkeLITIS0FEDrC5tTVIe5f2i561ZZQ/exec';
         let isOnlineMode = false;
 
         // Initialize app
@@ -707,7 +701,7 @@
             if (statusElement) {
                 statusElement.innerHTML = online 
                     ? '<span class="text-green-600">🟢 Online (Google Sheets)</span>'
-                    : '<span class="text-yellow-600">🟡 Offline (Local Storage)</span>';
+                    : '<span class="text-red-600">🔴 Offline (Local Storage)</span>';
             }
         }
 
@@ -839,20 +833,6 @@
                 return;
             }
 
-            // If no students exist, create demo student
-            if (students.length === 0) {
-                students.push({
-                    id: 1,
-                    nis: '12345',
-                    name: 'Ahmad Budi',
-                    class: 'XII IPA 1',
-                    email: 'ahmad@email.com',
-                    password: '123'
-                });
-                saveData();
-                console.log('Demo student created');
-            }
-
             // Check if it's a student login (by NIS)
             const student = students.find(s => {
                 const nisMatch = s.nis && s.nis.toString().trim() === username;
@@ -869,8 +849,11 @@
             }
 
             // Login failed
-            const availableStudents = students.map(s => `NIS: ${s.nis} | Password: ${s.password}`).join('\n');
-            alert(`Username/NIS atau password salah!\n\n👨‍🏫 Login Guru:\nUsername: guru | Password: 123\n\n👨‍🎓 Siswa yang tersedia:\n${availableStudents}\n\nDemo login siswa:\nNIS: 12345 | Password: 123`);
+            if (students.length === 0) {
+                alert('Belum ada data siswa dalam sistem. Silakan hubungi guru untuk menambahkan data siswa terlebih dahulu.\n\n👨‍🏫 Login Guru:\nUsername: guru | Password: 123');
+            } else {
+                alert('Username/NIS atau password salah!\n\n👨‍🏫 Login Guru:\nUsername: guru | Password: 123\n\nSilakan hubungi guru jika lupa NIS atau password Anda.');
+            }
         }
 
         function showTeacherDashboard() {
@@ -1747,7 +1730,7 @@
                         await loadDataFromGoogleSheets();
                         alert('✅ Koneksi berhasil! Data telah disinkronkan dengan Google Sheets!');
                     } else {
-                        alert('❌ Tidak dapat terhubung ke Google Sheets. Pastikan Apps Script sudah di-deploy dengan benar.');
+                        alert('❌ Tidak dapat terhubung ke Google Sheets. Pastikan Apps Script sudah di-deploy dengan benar dan URL sudah diupdate di kode.');
                     }
                 }
             } catch (error) {
@@ -1774,5 +1757,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9831a94a60cb06b6',t:'MTc1ODU0MjYyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9831ee70a10bab44',t:'MTc1ODU0NTQ2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
