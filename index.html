@@ -652,11 +652,12 @@
             initializeApp();
         });
 
-        function initializeApp() {
+        async function initializeApp() {
             setupEventListeners();
-            checkOnlineMode();
-            loadStoredData();
+            await loadStoredData();
+            await checkOnlineMode();
             setupTextDirectionHandlers();
+            updateAllDashboards();
         }
 
         function setupTextDirectionHandlers() {
@@ -675,33 +676,59 @@
 
         // Google Sheets Integration Functions
         async function checkOnlineMode() {
+            // Skip check if URL is not configured
+            if (APPS_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
+                isOnlineMode = false;
+                showOnlineStatus(false, 'URL Apps Script belum dikonfigurasi');
+                return;
+            }
+
             try {
-                const response = await fetch(APPS_SCRIPT_URL + '?action=ping', {
+                console.log('Checking connection to:', APPS_SCRIPT_URL);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch(APPS_SCRIPT_URL + '?action=test', {
                     method: 'GET',
-                    mode: 'cors'
+                    mode: 'cors',
+                    signal: controller.signal,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
+                
+                clearTimeout(timeoutId);
+                
                 if (response.ok) {
+                    const result = await response.text();
+                    console.log('Connection test response:', result);
                     isOnlineMode = true;
-                    console.log('Online mode: Connected to Google Sheets');
                     showOnlineStatus(true);
+                    
+                    // Load data from Google Sheets after successful connection
+                    await loadDataFromGoogleSheets();
                 } else {
+                    console.log('Connection failed with status:', response.status);
                     isOnlineMode = false;
-                    console.log('Offline mode: Using local storage');
-                    showOnlineStatus(false);
+                    showOnlineStatus(false, `HTTP ${response.status}`);
                 }
             } catch (error) {
+                console.log('Connection error:', error.message);
                 isOnlineMode = false;
-                console.log('Offline mode: Using local storage');
-                showOnlineStatus(false);
+                showOnlineStatus(false, error.name === 'AbortError' ? 'Timeout' : 'Connection failed');
             }
         }
 
-        function showOnlineStatus(online) {
+        function showOnlineStatus(online, message = '') {
             const statusElement = document.getElementById('connectionStatus');
             if (statusElement) {
-                statusElement.innerHTML = online 
-                    ? '<span class="text-green-600">🟢 Online (Google Sheets)</span>'
-                    : '<span class="text-red-600">🔴 Offline (Local Storage)</span>';
+                if (online) {
+                    statusElement.innerHTML = '<span class="text-green-600">🟢 Online (Google Sheets)</span>';
+                } else {
+                    const errorMsg = message ? ` - ${message}` : '';
+                    statusElement.innerHTML = `<span class="text-red-600">🔴 Offline (Local Storage)${errorMsg}</span>`;
+                }
             }
         }
 
@@ -717,46 +744,99 @@
                     data: data
                 };
 
+                console.log('Sending to Google Sheets:', payload);
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'cors',
+                    signal: controller.signal,
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(payload)
                 });
 
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const result = await response.json();
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse JSON response:', responseText);
+                    throw new Error('Invalid JSON response from server');
+                }
+
                 console.log('Google Sheets response:', result);
                 return result;
             } catch (error) {
                 console.error('Error syncing with Google Sheets:', error);
-                isOnlineMode = false;
-                showOnlineStatus(false);
+                if (error.name !== 'AbortError') {
+                    isOnlineMode = false;
+                    showOnlineStatus(false, 'Sync failed');
+                }
                 return null;
             }
         }
 
         async function loadDataFromGoogleSheets() {
-            if (!isOnlineMode) return;
+            if (!isOnlineMode) {
+                console.log('Skipping Google Sheets load - offline mode');
+                return;
+            }
 
             try {
+                console.log('Loading data from Google Sheets...');
                 const result = await syncWithGoogleSheets('loadAll');
+                
                 if (result && result.success) {
-                    students = result.data.students || [];
-                    questions = result.data.questions || [];
-                    examResults = result.data.examResults || [];
-                    activeExams = result.data.activeExams || [];
+                    // Merge with existing local data
+                    const loadedStudents = result.data.students || [];
+                    const loadedQuestions = result.data.questions || [];
+                    const loadedExamResults = result.data.examResults || [];
+                    const loadedActiveExams = result.data.activeExams || [];
                     
-                    console.log('Data loaded from Google Sheets');
+                    console.log('Loaded from Google Sheets:', {
+                        students: loadedStudents.length,
+                        questions: loadedQuestions.length,
+                        examResults: loadedExamResults.length,
+                        activeExams: loadedActiveExams.length
+                    });
+                    
+                    // Update arrays with loaded data
+                    students = loadedStudents;
+                    questions = loadedQuestions;
+                    examResults = loadedExamResults;
+                    activeExams = loadedActiveExams;
+                    
+                    // Save to local storage as backup
+                    localStorage.setItem('examSystem', JSON.stringify({
+                        students,
+                        questions,
+                        examResults,
+                        activeExams
+                    }));
+                    
+                    console.log('Data loaded and synced from Google Sheets');
                     updateAllDashboards();
+                } else {
+                    console.log('No data received from Google Sheets or operation failed');
+                    if (result) {
+                        console.log('Result:', result);
+                    }
                 }
             } catch (error) {
                 console.error('Error loading from Google Sheets:', error);
+                showOnlineStatus(false, 'Load failed');
             }
         }
 
@@ -1719,23 +1799,47 @@
             syncButton.disabled = true;
 
             try {
+                console.log('Manual sync started...');
+                
+                // First check connection
+                await checkOnlineMode();
+                
                 if (isOnlineMode) {
-                    await saveDataToGoogleSheets();
+                    console.log('Connection OK, syncing data...');
+                    
+                    // Save current data to Google Sheets
+                    const saveResult = await saveDataToGoogleSheets();
+                    console.log('Save result:', saveResult);
+                    
+                    // Load fresh data from Google Sheets
                     await loadDataFromGoogleSheets();
-                    alert('✅ Data berhasil disinkronkan dengan Google Sheets!');
+                    
+                    alert('✅ Data berhasil disinkronkan dengan Google Sheets!\n\n' +
+                          `📊 Siswa: ${students.length}\n` +
+                          `❓ Soal: ${questions.length}\n` +
+                          `📝 Ujian Aktif: ${activeExams.length}\n` +
+                          `📈 Hasil: ${examResults.length}`);
                 } else {
-                    await checkOnlineMode();
-                    if (isOnlineMode) {
-                        await saveDataToGoogleSheets();
-                        await loadDataFromGoogleSheets();
-                        alert('✅ Koneksi berhasil! Data telah disinkronkan dengan Google Sheets!');
+                    if (APPS_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
+                        alert('⚠️ URL Apps Script belum dikonfigurasi!\n\n' +
+                              'Langkah-langkah:\n' +
+                              '1. Buat Google Apps Script\n' +
+                              '2. Deploy sebagai web app\n' +
+                              '3. Ganti YOUR_SCRIPT_ID dengan ID deployment Anda\n' +
+                              '4. Pastikan akses diatur ke "Anyone"');
                     } else {
-                        alert('❌ Tidak dapat terhubung ke Google Sheets. Pastikan Apps Script sudah di-deploy dengan benar dan URL sudah diupdate di kode.');
+                        alert('❌ Tidak dapat terhubung ke Google Sheets.\n\n' +
+                              'Periksa:\n' +
+                              '• Koneksi internet\n' +
+                              '• URL Apps Script sudah benar\n' +
+                              '• Apps Script sudah di-deploy\n' +
+                              '• Akses diatur ke "Anyone"\n\n' +
+                              'Data tetap tersimpan di local storage.');
                     }
                 }
             } catch (error) {
                 console.error('Sync error:', error);
-                alert('❌ Gagal sinkronisasi. Periksa koneksi internet dan konfigurasi Apps Script.');
+                alert('❌ Gagal sinkronisasi: ' + error.message + '\n\nData tetap tersimpan di local storage.');
             } finally {
                 syncButton.innerHTML = originalText;
                 syncButton.disabled = false;
@@ -1757,5 +1861,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9831ee70a10bab44',t:'MTc1ODU0NTQ2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98321644a788fd94',t:'MTc1ODU0NzA5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
