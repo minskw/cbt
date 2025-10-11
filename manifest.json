@@ -5,17 +5,17 @@
   "start_url": "https://minskw.github.io/cbt/",
   "display": "standalone",
   "background_color": "#FFFFFF",
-  "theme_color": "#25D366",
+  "theme_color": "#E93F02",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://i.imgur.com/0Laf7Zu.png",
+      "src": "https://i.imgur.com/fGyWPCM.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://i.imgur.com/0Laf7Zu.png",
+      "src": "https://i.imgur.com/fGyWPCM.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
