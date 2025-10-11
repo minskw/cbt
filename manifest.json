@@ -1,0 +1,25 @@
+{
+  "name": "GAS CBT System",
+  "short_name": "CBTSystem",
+  "description": "Computer Based Test System berbasis Google AppScript",
+  "start_url": "https://minskw.github.io/cbt/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#25D366",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/0Laf7Zu.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.imgur.com/0Laf7Zu.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"]
+}
